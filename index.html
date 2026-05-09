@@ -159,6 +159,21 @@ body{background:var(--paper);color:var(--ink);font-family:var(--serif);font-size
     <div class="tagline">GEMINI 免費版</div>
   </div>
 
+  <!-- Setup API Key -->
+  <div class="setup-card" id="setup-card">
+    <div class="free-badge"><i class="ti ti-brand-google"></i> 免費申請 Gemini API</div>
+    <div class="setup-title"><i class="ti ti-key"></i> 設定 API 金鑰</div>
+    <div class="setup-sub">
+      由於安全性限制，請自行輸入您的 Gemini API 金鑰。金鑰只會儲存在您的瀏覽器中，不會上傳至任何伺服器。
+      <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--teal);text-decoration:none;font-weight:500">前往申請</a>
+    </div>
+    <div class="key-row">
+      <input type="password" id="api-key-input" placeholder="AIzaSy...">
+      <button class="btn btn-teal" onclick="testKey()">測試並儲存</button>
+    </div>
+    <div id="key-status" class="key-status"></div>
+  </div>
+
   <!-- Nav -->
   <div class="mode-row">
     <button class="mode-btn active" id="btn-upload" onclick="setMode('upload')">
@@ -248,12 +263,39 @@ const STORE='floordb_gemini';
 let db=[], editId=null, selA=null, selB=null;
 let uploadFile1=null, uploadB641=null, uploadMime1=null;
 let uploadFile2=null, uploadB642=null, uploadMime2=null;
-let apiKey='AIzaSyB9DVinIFRhkd-v9O1nYNG3aK9FydTFW3E';
+let apiKey=''; 
 let currentModel='gemini-2.0-flash';
 
 const GEMINI_URL = (key, model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
+function setKeyStatus(msg,type){
+  const el=document.getElementById('key-status');
+  if(el) { el.textContent=msg; el.className='key-status '+(type==='ok'?'key-ok':'key-err'); }
+}
 
+async function testKey(){
+  const k=document.getElementById('api-key-input').value.trim();
+  if(!k){setKeyStatus('請先輸入金鑰','err');return;}
+  if(!k.startsWith('AIza')){setKeyStatus('格式不對，Gemini 金鑰以 AIza 開頭','err');return;}
+  setKeyStatus('測試中…','');
+  try{
+    const r=await fetch(GEMINI_URL(k, currentModel),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:'回覆OK兩字'}]}]})
+    });
+    const d=await r.json();
+    if(d.error) throw new Error(d.error.message);
+    
+    apiKey=k;
+    try{localStorage.setItem('floor_gemini_key',k);}catch(e){}
+    setKeyStatus('✓ 連線成功！AI 功能可正常使用','ok');
+    document.getElementById('setup-card').classList.add('ok');
+    updateSendBtn(); updateCmpBtn();
+  }catch(e){
+    setKeyStatus('✗ '+e.message,'err');
+  }
+}
 
 async function callGemini(parts, maxTokens=3000){
   if(!apiKey) throw new Error('請先設定 Gemini API 金鑰');
@@ -351,7 +393,8 @@ function handleFile(f,idx=1){
 
 async function runUpload(){
   const mode = document.querySelector('input[name="cmp-mode"]:checked').value;
-  if(!uploadFile1 || !apiKey) return;
+  if(!uploadFile1) return;
+  if(!apiKey) { alert('請先在上方輸入並儲存 API 金鑰！'); return; }
   
   let selectedDb = [];
   if(mode === 'db') {
@@ -774,6 +817,15 @@ function exportToPDF(btn) {
 load();
 try{
   const m=localStorage.getItem('floor_gemini_model');if(m)currentModel=m;
+  const k=localStorage.getItem('floor_gemini_key');
+  if(k){
+    apiKey=k;
+    const inputEl = document.getElementById('api-key-input');
+    if(inputEl) inputEl.value=k;
+    setKeyStatus('✓ 已載入儲存的金鑰','ok');
+    const cardEl = document.getElementById('setup-card');
+    if(cardEl) cardEl.classList.add('ok');
+  }
 }catch(e){}
 renderStats();renderTable();updateDbSub();refreshUploadPreview();toggleCmpMode();
 </script>
