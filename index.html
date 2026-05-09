@@ -1,434 +1,1219 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>地板規範分析儀</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --ink:#1a1814;--paper:#f5f3ee;--line:#d4d0c8;--line2:#b8b4aa;
-  --teal:#1a6b52;--teal-l:#e4f2ec;--teal-m:#2d9070;
-  --purple:#4a3a8c;--purple-l:#eeeaf8;
-  --amber:#8c5a1a;--amber-l:#faf0e4;
-  --red:#8c2a2a;--red-l:#faeaea;
-  --green-l:#f0fdf4;--green:#15803d;--green-b:#bbf7d0;
-  --mono:'DM Mono',monospace;--serif:'Noto Serif TC',serif;
-}
-body{background:var(--paper);color:var(--ink);font-family:var(--serif);font-size:14px;min-height:100vh}
-.app{max-width:800px;margin:0 auto;padding:2rem 1.25rem}
-.top-bar{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1.5px solid var(--ink);padding-bottom:.75rem;margin-bottom:1.5rem}
-.logo{font-size:20px;font-weight:500;letter-spacing:-.5px}.logo span{color:var(--teal)}
-.tagline{font-family:var(--mono);font-size:11px;color:var(--line2);letter-spacing:.5px}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>地板規範分析儀</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* setup */
-.setup-card{background:white;border:1px solid var(--line);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;transition:border-color .2s}
-.setup-card.ok{border-color:var(--teal)}
-.setup-title{font-size:14px;font-weight:500;margin-bottom:.4rem;display:flex;align-items:center;gap:8px}
-.setup-sub{font-size:12px;color:var(--line2);line-height:1.7;margin-bottom:.875rem}
-.key-row{display:flex;gap:8px}
-.key-row input{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:var(--mono);outline:none;background:white;color:var(--ink)}
-.key-row input:focus{border-color:var(--teal)}
-.key-status{font-size:11px;font-family:var(--mono);margin-top:5px;min-height:16px}
-.key-ok{color:var(--teal)}.key-err{color:var(--red)}
-.free-badge{display:inline-flex;align-items:center;gap:4px;background:var(--green-l);color:var(--green);border:1px solid var(--green-b);border-radius:99px;font-size:11px;font-family:var(--mono);padding:2px 10px;margin-bottom:.75rem}
+    :root {
+      --ink: #1a1814;
+      --paper: #f5f3ee;
+      --line: #d4d0c8;
+      --line2: #b8b4aa;
+      --teal: #1a6b52;
+      --teal-l: #e4f2ec;
+      --teal-m: #2d9070;
+      --purple: #4a3a8c;
+      --purple-l: #eeeaf8;
+      --amber: #8c5a1a;
+      --amber-l: #faf0e4;
+      --red: #8c2a2a;
+      --red-l: #faeaea;
+      --green-l: #f0fdf4;
+      --green: #15803d;
+      --green-b: #bbf7d0;
+      --mono: 'DM Mono', monospace;
+      --serif: 'Noto Serif TC', serif;
+    }
 
-/* nav */
-.mode-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.25rem}
-.mode-btn{padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);cursor:pointer;font-family:var(--serif);font-size:12px;color:var(--ink);text-align:left;transition:all .15s}
-.mode-btn.active{border-color:var(--teal);background:var(--teal-l);color:var(--teal)}
-.mode-btn .mt{font-weight:500;display:block;margin-bottom:1px}
-.mode-btn .ms{font-size:10px;color:var(--line2);font-family:var(--mono)}
-.mode-btn.active .ms{color:var(--teal-m)}
-.panel{display:none}.panel.show{display:block}
-.sec-head{font-family:var(--mono);font-size:11px;color:var(--line2);letter-spacing:.8px;text-transform:uppercase;margin:1.25rem 0 .5rem;padding-bottom:4px;border-bottom:.5px solid var(--line)}
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 14px;
+      min-height: 100vh
+    }
 
-/* buttons */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--serif);border:none;transition:all .15s;white-space:nowrap}
-.btn-ink{background:var(--ink);color:var(--paper)}.btn-ink:hover{background:#2d2a24}
-.btn-teal{background:var(--teal);color:white}.btn-teal:hover{background:var(--teal-m)}
-.btn-ghost{background:white;color:var(--ink);border:1px solid var(--line)}.btn-ghost:hover{border-color:var(--line2)}
-.btn-danger{background:var(--red-l);color:var(--red);border:1px solid #e8b8b8}
-.btn-sm{padding:5px 9px;font-size:11px}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.run-btn{width:100%;padding:12px;border:1.5px solid var(--ink);border-radius:6px;background:var(--ink);color:var(--paper);font-family:var(--serif);font-size:14px;font-weight:500;cursor:pointer;margin-top:.75rem;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
-.run-btn:hover:not(:disabled){background:#2d2a24}
-.run-btn:disabled{background:var(--line);border-color:var(--line);cursor:not-allowed;color:var(--line2)}
-.tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-family:var(--mono);margin:1px}
-.tag-t{background:var(--teal-l);color:var(--teal)}
-.tag-a{background:var(--amber-l);color:var(--amber)}
-.tag-p{background:var(--purple-l);color:var(--purple)}
-.tag-g{background:var(--line);color:var(--line2)}
+    .app {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem
+    }
 
-/* status */
-.status{padding:10px 14px;border-radius:6px;font-size:12px;margin:.75rem 0;display:flex;align-items:flex-start;gap:8px;font-family:var(--mono);line-height:1.6}
-.s-info{background:var(--teal-l);color:var(--teal);border:1px solid #a8d5c2}
-.s-ok{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
-.s-err{background:var(--red-l);color:var(--red);border:1px solid #e8b8b8}
-.spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;margin-top:1px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.prog-wrap{height:2px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:5px}
-.prog-bar{height:100%;background:var(--teal);border-radius:99px;transition:width .3s;width:0}
+    .top-bar {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1.5px solid var(--ink);
+      padding-bottom: .75rem;
+      margin-bottom: 1.5rem
+    }
 
-/* upload */
-.upload-zone{border:1.5px dashed var(--line2);border-radius:8px;padding:2rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:white}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--teal);background:var(--teal-l)}
-.upload-zone.has-file{border-style:solid;border-color:var(--teal);background:var(--teal-l)}
-.db-preview{background:white;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:1rem}
-.db-preview-head{padding:.6rem 1rem;background:var(--paper);border-bottom:.5px solid var(--line);font-size:11px;font-family:var(--mono);color:var(--line2);display:flex;align-items:center;justify-content:space-between}
-.db-chip-row{padding:.75rem 1rem;display:flex;flex-wrap:wrap;gap:8px}
-.db-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:5px;font-size:11px;border:1px solid var(--line);background:var(--paper)}
-.db-chip-name{font-weight:500}
-.db-chip-sub{font-family:var(--mono);color:var(--line2);font-size:10px}
+    .logo {
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -.5px
+    }
 
-/* result */
-.result-wrap{margin-top:1rem;animation:fadeUp .2s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.result-card{background:white;border:1px solid var(--line);border-radius:8px;padding:.875rem 1rem;margin-bottom:.75rem}
-.result-card h3{font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;color:var(--line2);margin-bottom:.75rem;padding-bottom:5px;border-bottom:.5px solid var(--line)}
-.ai-content{font-size:13px;line-height:1.9;color:var(--ink)}
-.table-wrap{width:100%;overflow-x:auto;margin:1.5rem 0;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.06);border:1px solid #e2e0d8;background:white;animation:fadeUp 0.4s ease}
-.premium-table{width:100%;border-collapse:separate;border-spacing:0;text-align:left;font-size:13px;font-family:var(--serif)}
-.premium-table th{background:#1a1814;color:white;padding:14px 16px;font-weight:500;letter-spacing:1px;font-family:var(--mono);white-space:nowrap}
-.premium-table td{padding:14px 16px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle;line-height:1.6}
-.premium-table tr:last-child td{border-bottom:none}
-.premium-table tr:nth-child(even) td{background:#fdfcfb}
-.premium-table tr:hover td{background:var(--teal-l);cursor:default}
-.status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;font-family:var(--mono);white-space:nowrap;line-height:1;box-shadow:0 2px 4px rgba(0,0,0,0.04);vertical-align:middle;position:relative;top:-1px}
-.st-ok{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
-.st-pro{background:var(--purple-l);color:var(--purple);border:1px solid #dcd3f6}
-.st-err{background:var(--red-l);color:var(--red);border:1px solid #f6d3d3}
-.st-warn{background:var(--amber-l);color:var(--amber);border:1px solid #f6e8d3}
-.pro-list{list-style:none;padding:0;margin:1.5rem 0;display:grid;gap:10px}
-.pro-list li{padding:12px 16px;background:white;border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.03);display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.6;transition:transform .2s ease, box-shadow .2s ease}
-.pro-list li:hover{transform:translateX(4px);box-shadow:0 4px 12px rgba(0,0,0,0.06);border-color:var(--teal-m)}
-.pro-list li::before{content:'\eb56';font-family:'tabler-icons';color:var(--teal);font-size:16px;margin-top:2px;flex-shrink:0}
-.ai-content h1,.ai-content h2,.ai-content h3{font-size:15px;font-weight:500;margin:1.5rem 0 .5rem;color:var(--ink)}
-.ai-content p{margin-bottom:.5rem}
-.ai-content strong{font-weight:500}
-.ai-content code{background:var(--paper);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:12px}
+    .logo span {
+      color: var(--teal)
+    }
 
-/* compare */
-.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.75rem}
-.prod-card{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:white;cursor:pointer;transition:all .15s;position:relative}
-.prod-card:hover{border-color:var(--purple);background:var(--purple-l)}
-.prod-card.sel-a{border-color:var(--teal);background:var(--teal-l)}
-.prod-card.sel-b{border-color:var(--amber);background:var(--amber-l)}
-.sel-badge{position:absolute;top:6px;right:8px;font-size:10px;font-family:var(--mono);font-weight:500;padding:1px 6px;border-radius:3px}
-.sel-badge-a{background:var(--teal);color:white}
-.sel-badge-b{background:var(--amber);color:white}
+    .tagline {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--line2);
+      letter-spacing: .5px
+    }
 
-/* db */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
-.stat-card{background:white;border:1px solid var(--line);border-radius:6px;padding:.6rem .75rem;text-align:center}
-.stat-num{font-size:20px;font-weight:500;color:var(--teal);line-height:1.2}
-.stat-lbl{font-size:10px;color:var(--line2);font-family:var(--mono);margin-top:2px}
-.db-toolbar{display:flex;gap:8px;margin-bottom:.75rem;align-items:center;flex-wrap:wrap}
-.db-toolbar input{flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:var(--serif);background:white;color:var(--ink);outline:none}
-.db-toolbar input:focus{border-color:var(--teal)}
-.db-table{width:100%;border-collapse:collapse;font-size:12px;background:white;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
-.db-table th{padding:8px 10px;font-size:10px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;color:var(--line2);border-bottom:1.5px solid var(--line);background:var(--paper);text-align:left}
-.db-table td{padding:9px 10px;border-bottom:.5px solid var(--line);vertical-align:middle}
-.db-table tr:last-child td{border-bottom:none}
-.db-table tr:hover td{background:#fafaf8}
-.act-btns{display:flex;gap:4px}
-.form-wrap{background:white;border:1px solid var(--line);border-radius:10px;padding:1.25rem;margin-bottom:1rem;animation:fadeUp .15s ease}
-.form-hd{font-size:14px;font-weight:500;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between}
-.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.5rem}
-.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:.5rem}
-.fg label{display:block;font-size:10px;color:var(--line2);font-family:var(--mono);margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px}
-.fg input,.fg select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:5px;font-size:12px;font-family:var(--serif);background:white;color:var(--ink);outline:none}
-.fg input:focus,.fg select:focus{border-color:var(--teal)}
-.fsec{font-size:10px;color:var(--line2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;padding-bottom:4px;border-bottom:.5px solid var(--line);margin-bottom:.5rem;grid-column:1/-1}
-.form-act{display:flex;gap:8px;justify-content:flex-end;margin-top:.75rem}
-.empty{text-align:center;padding:2.5rem 1rem;color:var(--line2);font-size:12px;font-family:var(--mono)}
-.empty-icon{font-size:28px;margin-bottom:8px;opacity:.4}
+    /* setup */
+    .setup-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      transition: border-color .2s
+    }
 
-@media(max-width:580px){
-  .mode-row,.prod-grid,.fg2,.fg3,.stats-row{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:1fr 1fr}
-}
-</style>
+    .setup-card.ok {
+      border-color: var(--teal)
+    }
+
+    .setup-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: .4rem;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .setup-sub {
+      font-size: 12px;
+      color: var(--line2);
+      line-height: 1.7;
+      margin-bottom: .875rem
+    }
+
+    .key-row {
+      display: flex;
+      gap: 8px
+    }
+
+    .key-row input {
+      flex: 1;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: var(--mono);
+      outline: none;
+      background: white;
+      color: var(--ink)
+    }
+
+    .key-row input:focus {
+      border-color: var(--teal)
+    }
+
+    .key-status {
+      font-size: 11px;
+      font-family: var(--mono);
+      margin-top: 5px;
+      min-height: 16px
+    }
+
+    .key-ok {
+      color: var(--teal)
+    }
+
+    .key-err {
+      color: var(--red)
+    }
+
+    .free-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--green-l);
+      color: var(--green);
+      border: 1px solid var(--green-b);
+      border-radius: 99px;
+      font-size: 11px;
+      font-family: var(--mono);
+      padding: 2px 10px;
+      margin-bottom: .75rem
+    }
+
+    /* nav */
+    .mode-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 1.25rem
+    }
+
+    .mode-btn {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--paper);
+      cursor: pointer;
+      font-family: var(--serif);
+      font-size: 12px;
+      color: var(--ink);
+      text-align: left;
+      transition: all .15s
+    }
+
+    .mode-btn.active {
+      border-color: var(--teal);
+      background: var(--teal-l);
+      color: var(--teal)
+    }
+
+    .mode-btn .mt {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 1px
+    }
+
+    .mode-btn .ms {
+      font-size: 10px;
+      color: var(--line2);
+      font-family: var(--mono)
+    }
+
+    .mode-btn.active .ms {
+      color: var(--teal-m)
+    }
+
+    .panel {
+      display: none
+    }
+
+    .panel.show {
+      display: block
+    }
+
+    .sec-head {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--line2);
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      margin: 1.25rem 0 .5rem;
+      padding-bottom: 4px;
+      border-bottom: .5px solid var(--line)
+    }
+
+    /* buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--serif);
+      border: none;
+      transition: all .15s;
+      white-space: nowrap
+    }
+
+    .btn-ink {
+      background: var(--ink);
+      color: var(--paper)
+    }
+
+    .btn-ink:hover {
+      background: #2d2a24
+    }
+
+    .btn-teal {
+      background: var(--teal);
+      color: white
+    }
+
+    .btn-teal:hover {
+      background: var(--teal-m)
+    }
+
+    .btn-ghost {
+      background: white;
+      color: var(--ink);
+      border: 1px solid var(--line)
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--line2)
+    }
+
+    .btn-danger {
+      background: var(--red-l);
+      color: var(--red);
+      border: 1px solid #e8b8b8
+    }
+
+    .btn-sm {
+      padding: 5px 9px;
+      font-size: 11px
+    }
+
+    .btn:disabled {
+      opacity: .4;
+      cursor: not-allowed
+    }
+
+    .run-btn {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid var(--ink);
+      border-radius: 6px;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--serif);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: .75rem;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px
+    }
+
+    .run-btn:hover:not(:disabled) {
+      background: #2d2a24
+    }
+
+    .run-btn:disabled {
+      background: var(--line);
+      border-color: var(--line);
+      cursor: not-allowed;
+      color: var(--line2)
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-family: var(--mono);
+      margin: 1px
+    }
+
+    .tag-t {
+      background: var(--teal-l);
+      color: var(--teal)
+    }
+
+    .tag-a {
+      background: var(--amber-l);
+      color: var(--amber)
+    }
+
+    .tag-p {
+      background: var(--purple-l);
+      color: var(--purple)
+    }
+
+    .tag-g {
+      background: var(--line);
+      color: var(--line2)
+    }
+
+    /* status */
+    .status {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin: .75rem 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-family: var(--mono);
+      line-height: 1.6
+    }
+
+    .s-info {
+      background: var(--teal-l);
+      color: var(--teal);
+      border: 1px solid #a8d5c2
+    }
+
+    .s-ok {
+      background: var(--green-l);
+      color: var(--green);
+      border: 1px solid var(--green-b)
+    }
+
+    .s-err {
+      background: var(--red-l);
+      color: var(--red);
+      border: 1px solid #e8b8b8
+    }
+
+    .spinner {
+      width: 13px;
+      height: 13px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .prog-wrap {
+      height: 2px;
+      background: var(--line);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 5px
+    }
+
+    .prog-bar {
+      height: 100%;
+      background: var(--teal);
+      border-radius: 99px;
+      transition: width .3s;
+      width: 0
+    }
+
+    /* upload */
+    .upload-zone {
+      border: 1.5px dashed var(--line2);
+      border-radius: 8px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: white
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag {
+      border-color: var(--teal);
+      background: var(--teal-l)
+    }
+
+    .upload-zone.has-file {
+      border-style: solid;
+      border-color: var(--teal);
+      background: var(--teal-l)
+    }
+
+    .db-preview {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1rem
+    }
+
+    .db-preview-head {
+      padding: .6rem 1rem;
+      background: var(--paper);
+      border-bottom: .5px solid var(--line);
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--line2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .db-chip-row {
+      padding: .75rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .db-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      border: 1px solid var(--line);
+      background: var(--paper)
+    }
+
+    .db-chip-name {
+      font-weight: 500
+    }
+
+    .db-chip-sub {
+      font-family: var(--mono);
+      color: var(--line2);
+      font-size: 10px
+    }
+
+    /* result */
+    .result-wrap {
+      margin-top: 1rem;
+      animation: fadeUp .2s ease
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(6px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .result-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: .875rem 1rem;
+      margin-bottom: .75rem
+    }
+
+    .result-card h3 {
+      font-size: 11px;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--line2);
+      margin-bottom: .75rem;
+      padding-bottom: 5px;
+      border-bottom: .5px solid var(--line)
+    }
+
+    .ai-content {
+      font-size: 13px;
+      line-height: 1.9;
+      color: var(--ink)
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e2e0d8;
+      background: white;
+      animation: fadeUp 0.4s ease
+    }
+
+    .premium-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+      font-size: 13px;
+      font-family: var(--serif)
+    }
+
+    .premium-table th {
+      background: #1a1814;
+      color: white;
+      padding: 14px 16px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      font-family: var(--mono);
+      white-space: nowrap
+    }
+
+    .premium-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink);
+      vertical-align: middle;
+      line-height: 1.6
+    }
+
+    .premium-table tr:last-child td {
+      border-bottom: none
+    }
+
+    .premium-table tr:nth-child(even) td {
+      background: #fdfcfb
+    }
+
+    .premium-table tr:hover td {
+      background: var(--teal-l);
+      cursor: default
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--mono);
+      white-space: nowrap;
+      line-height: 1;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      vertical-align: middle;
+      position: relative;
+      top: -1px
+    }
+
+    .st-ok {
+      background: var(--green-l);
+      color: var(--green);
+      border: 1px solid var(--green-b)
+    }
+
+    .st-pro {
+      background: var(--purple-l);
+      color: var(--purple);
+      border: 1px solid #dcd3f6
+    }
+
+    .st-err {
+      background: var(--red-l);
+      color: var(--red);
+      border: 1px solid #f6d3d3
+    }
+
+    .st-warn {
+      background: var(--amber-l);
+      color: var(--amber);
+      border: 1px solid #f6e8d3
+    }
+
+    .pro-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.5rem 0;
+      display: grid;
+      gap: 10px
+    }
+
+    .pro-list li {
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--teal);
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      transition: transform .2s ease, box-shadow .2s ease
+    }
+
+    .pro-list li:hover {
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border-color: var(--teal-m)
+    }
+
+    .pro-list li::before {
+      content: '\eb56';
+      font-family: 'tabler-icons';
+      color: var(--teal);
+      font-size: 16px;
+      margin-top: 2px;
+      flex-shrink: 0
+    }
+
+    .ai-content h1,
+    .ai-content h2,
+    .ai-content h3 {
+      font-size: 15px;
+      font-weight: 500;
+      margin: 1.5rem 0 .5rem;
+      color: var(--ink)
+    }
+
+    .ai-content p {
+      margin-bottom: .5rem
+    }
+
+    .ai-content strong {
+      font-weight: 500
+    }
+
+    .ai-content code {
+      background: var(--paper);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 12px
+    }
+
+    /* compare */
+    .prod-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: .75rem
+    }
+
+    .prod-card {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: white;
+      cursor: pointer;
+      transition: all .15s;
+      position: relative
+    }
+
+    .prod-card:hover {
+      border-color: var(--purple);
+      background: var(--purple-l)
+    }
+
+    .prod-card.sel-a {
+      border-color: var(--teal);
+      background: var(--teal-l)
+    }
+
+    .prod-card.sel-b {
+      border-color: var(--amber);
+      background: var(--amber-l)
+    }
+
+    .sel-badge {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: 3px
+    }
+
+    .sel-badge-a {
+      background: var(--teal);
+      color: white
+    }
+
+    .sel-badge-b {
+      background: var(--amber);
+      color: white
+    }
+
+    /* db */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 1rem
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .6rem .75rem;
+      text-align: center
+    }
+
+    .stat-num {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--teal);
+      line-height: 1.2
+    }
+
+    .stat-lbl {
+      font-size: 10px;
+      color: var(--line2);
+      font-family: var(--mono);
+      margin-top: 2px
+    }
+
+    .db-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: .75rem;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .db-toolbar input {
+      flex: 1;
+      min-width: 120px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--serif);
+      background: white;
+      color: var(--ink);
+      outline: none
+    }
+
+    .db-toolbar input:focus {
+      border-color: var(--teal)
+    }
+
+    .db-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--line)
+    }
+
+    .db-table th {
+      padding: 8px 10px;
+      font-size: 10px;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--line2);
+      border-bottom: 1.5px solid var(--line);
+      background: var(--paper);
+      text-align: left
+    }
+
+    .db-table td {
+      padding: 9px 10px;
+      border-bottom: .5px solid var(--line);
+      vertical-align: middle
+    }
+
+    .db-table tr:last-child td {
+      border-bottom: none
+    }
+
+    .db-table tr:hover td {
+      background: #fafaf8
+    }
+
+    .act-btns {
+      display: flex;
+      gap: 4px
+    }
+
+    .form-wrap {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      animation: fadeUp .15s ease
+    }
+
+    .form-hd {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: .75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .fg2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: .5rem
+    }
+
+    .fg3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: .5rem
+    }
+
+    .fg label {
+      display: block;
+      font-size: 10px;
+      color: var(--line2);
+      font-family: var(--mono);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: .3px
+    }
+
+    .fg input,
+    .fg select {
+      width: 100%;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      font-size: 12px;
+      font-family: var(--serif);
+      background: white;
+      color: var(--ink);
+      outline: none
+    }
+
+    .fg input:focus,
+    .fg select:focus {
+      border-color: var(--teal)
+    }
+
+    .fsec {
+      font-size: 10px;
+      color: var(--line2);
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding-bottom: 4px;
+      border-bottom: .5px solid var(--line);
+      margin-bottom: .5rem;
+      grid-column: 1/-1
+    }
+
+    .form-act {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: .75rem
+    }
+
+    .empty {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--line2);
+      font-size: 12px;
+      font-family: var(--mono)
+    }
+
+    .empty-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      opacity: .4
+    }
+
+    @media(max-width:580px) {
+
+      .mode-row,
+      .prod-grid,
+      .fg2,
+      .fg3,
+      .stats-row {
+        grid-template-columns: 1fr
+      }
+
+      .stats-row {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="app">
-  <div class="top-bar">
-    <div class="logo">地板規範<span>分析儀</span></div>
-    <div class="tagline">GEMINI 免費版</div>
-  </div>
-
-  <!-- Setup API Key -->
-  <div class="setup-card" id="setup-card">
-    <div class="free-badge"><i class="ti ti-brand-google"></i> 免費申請 Gemini API</div>
-    <div class="setup-title"><i class="ti ti-key"></i> 設定 API 金鑰</div>
-    <div class="setup-sub">
-      由於安全性限制，請自行輸入您的 Gemini API 金鑰。金鑰只會儲存在您的瀏覽器中，不會上傳至任何伺服器。
-      <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--teal);text-decoration:none;font-weight:500">前往申請</a>
+  <div class="app">
+    <div class="top-bar">
+      <div class="logo">地板規範<span>分析儀</span></div>
+      <div class="tagline">GEMINI 免費版</div>
     </div>
-    <div class="key-row">
-      <input type="password" id="api-key-input" placeholder="AIzaSy...">
-      <button class="btn btn-teal" onclick="testKey()">測試並儲存</button>
-    </div>
-    <div id="key-status" class="key-status"></div>
-  </div>
 
-  <!-- Nav -->
-  <div class="mode-row">
-    <button class="mode-btn active" id="btn-upload" onclick="setMode('upload')">
-      <i class="ti ti-file-upload" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>
-      <span class="mt">上傳比對</span><span class="ms">規範 vs 資料庫</span>
-    </button>
-    <button class="mode-btn" id="btn-compare" onclick="setMode('compare')">
-      <i class="ti ti-arrows-diff" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>
-      <span class="mt">選品比較</span><span class="ms">挑選產品對比</span>
-    </button>
-    <button class="mode-btn" id="btn-db" onclick="setMode('db')">
-      <i class="ti ti-database" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>
-      <span class="mt">產品資料庫</span><span class="ms" id="db-sub">新增 / 管理</span>
-    </button>
-  </div>
-
-  <!-- 上傳比對 -->
-  <div class="panel show" id="panel-upload">
-    <div class="upload-zone" id="dropzone"
-      onclick="document.getElementById('file-in1').click()"
-      ondragover="onDrag(event,true,1)" ondragleave="onDrag(event,false,1)" ondrop="onDrop(event,1)">
-      <i class="ti ti-cloud-upload" style="font-size:32px;color:var(--line2);display:block;margin-bottom:8px"></i>
-      <div style="font-size:14px;font-weight:500;margin-bottom:4px">上傳規範圖 / 測試報告 (基準)</div>
-      <div style="font-size:12px;color:var(--line2);font-family:var(--mono)">PDF · PNG · JPG · 點擊或拖曳</div>
-      <div id="preview1"></div>
-    </div>
-    <input type="file" id="file-in1" accept=".pdf,image/*" style="display:none" onchange="loadFile(this,1)">
-
-    <div class="sec-head">比對設定</div>
-    <div style="margin-bottom:1rem">
-      <div style="font-size:12px;color:var(--line2);margin-bottom:6px">比對對象：</div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <label class="radio-label"><input type="radio" name="cmp-mode" value="file" onchange="toggleCmpMode()" checked> 與另一份檔案比對</label>
-        <label class="radio-label"><input type="radio" name="cmp-mode" value="db" onchange="toggleCmpMode()"> 與資料庫產品比對</label>
-        <div id="db-select-wrap" style="margin-left:24px; display:none; flex-direction:column; gap:6px;"></div>
+    <!-- Setup API Key -->
+    <div class="setup-card" id="setup-card">
+      <div class="free-badge"><i class="ti ti-brand-google"></i> 免費申請 Gemini API</div>
+      <div class="setup-title"><i class="ti ti-key"></i> 設定 API 金鑰</div>
+      <div class="setup-sub">
+        由於安全性限制，請自行輸入您的 Gemini API 金鑰。金鑰只會儲存在您的瀏覽器中，不會上傳至任何伺服器。
+        <a href="https://aistudio.google.com/app/apikey" target="_blank"
+          style="color:var(--teal);text-decoration:none;font-weight:500">前往申請</a>
       </div>
-    </div>
-    <div id="file2-group" style="display:block">
-      <div class="upload-zone" id="dropzone2"
-        onclick="document.getElementById('file-in2').click()"
-        ondragover="onDrag(event,true,2)" ondragleave="onDrag(event,false,2)" ondrop="onDrop(event,2)">
-        <i class="ti ti-file-upload" style="font-size:32px;color:var(--line2);display:block;margin-bottom:8px"></i>
-        <div style="font-size:14px;font-weight:500;margin-bottom:4px">上傳產品型錄 / 測試報告 (比對)</div>
-        <div id="preview2"></div>
+      <div class="key-row">
+        <input type="password" id="api-key-input" placeholder="AIzaSy...">
+        <button class="btn btn-teal" onclick="testKey()">測試並儲存</button>
       </div>
-      <input type="file" id="file-in2" accept=".pdf,image/*" style="display:none" onchange="loadFile(this,2)">
+      <div id="key-status" class="key-status"></div>
     </div>
-    <button class="run-btn" id="upload-btn" onclick="runUpload()" disabled>
-      <i class="ti ti-sparkles" style="font-size:15px"></i>
-      <span id="send-label">上傳規範並比對分析</span>
-    </button>
-    <div id="upload-status"></div>
-    <div id="upload-result"></div>
+
+    <!-- Nav -->
+    <div class="mode-row">
+      <button class="mode-btn active" id="btn-upload" onclick="setMode('upload')">
+        <i class="ti ti-file-upload" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>
+        <span class="mt">上傳比對</span><span class="ms">規範 vs 資料庫</span>
+      </button>
+      <button class="mode-btn" id="btn-compare" onclick="setMode('compare')">
+        <i class="ti ti-arrows-diff" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>
+        <span class="mt">選品比較</span><span class="ms">挑選產品對比</span>
+      </button>
+      <button class="mode-btn" id="btn-db" onclick="setMode('db')">
+        <i class="ti ti-database" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>
+        <span class="mt">產品資料庫</span><span class="ms" id="db-sub">新增 / 管理</span>
+      </button>
+    </div>
+
+    <!-- 上傳比對 -->
+    <div class="panel show" id="panel-upload">
+      <div class="upload-zone" id="dropzone" onclick="document.getElementById('file-in1').click()"
+        ondragover="onDrag(event,true,1)" ondragleave="onDrag(event,false,1)" ondrop="onDrop(event,1)">
+        <i class="ti ti-cloud-upload" style="font-size:32px;color:var(--line2);display:block;margin-bottom:8px"></i>
+        <div style="font-size:14px;font-weight:500;margin-bottom:4px">上傳規範圖 / 測試報告 (基準)</div>
+        <div style="font-size:12px;color:var(--line2);font-family:var(--mono)">PDF · PNG · JPG · 點擊或拖曳</div>
+        <div id="preview1"></div>
+      </div>
+      <input type="file" id="file-in1" accept=".pdf,image/*" style="display:none" onchange="loadFile(this,1)">
+
+      <div class="sec-head">比對設定</div>
+      <div style="margin-bottom:1rem">
+        <div style="font-size:12px;color:var(--line2);margin-bottom:6px">比對對象：</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <label class="radio-label"><input type="radio" name="cmp-mode" value="file" onchange="toggleCmpMode()"
+              checked> 與另一份檔案比對</label>
+          <label class="radio-label"><input type="radio" name="cmp-mode" value="db" onchange="toggleCmpMode()">
+            與資料庫產品比對</label>
+          <div id="db-select-wrap" style="margin-left:24px; display:none; flex-direction:column; gap:6px;"></div>
+        </div>
+      </div>
+      <div id="file2-group" style="display:block">
+        <div class="upload-zone" id="dropzone2" onclick="document.getElementById('file-in2').click()"
+          ondragover="onDrag(event,true,2)" ondragleave="onDrag(event,false,2)" ondrop="onDrop(event,2)">
+          <i class="ti ti-file-upload" style="font-size:32px;color:var(--line2);display:block;margin-bottom:8px"></i>
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px">上傳產品型錄 / 測試報告 (比對)</div>
+          <div id="preview2"></div>
+        </div>
+        <input type="file" id="file-in2" accept=".pdf,image/*" style="display:none" onchange="loadFile(this,2)">
+      </div>
+      <button class="run-btn" id="upload-btn" onclick="runUpload()" disabled>
+        <i class="ti ti-sparkles" style="font-size:15px"></i>
+        <span id="send-label">上傳規範並比對分析</span>
+      </button>
+      <div id="upload-status"></div>
+      <div id="upload-result"></div>
+    </div>
+
+    <!-- 選品比較 -->
+    <div class="panel" id="panel-compare">
+      <div
+        style="font-size:11px;color:var(--line2);font-family:var(--mono);margin-bottom:6px;display:flex;align-items:center;gap:8px">
+        <span id="sel-hint">點選產品 A，再點選產品 B</span>
+        <button class="btn btn-ghost btn-sm" onclick="resetSel()" style="margin-left:auto">重選</button>
+      </div>
+      <div class="prod-grid" id="cmp-grid"></div>
+      <button class="run-btn" id="cmp-run" onclick="runCompare()" disabled>
+        <i class="ti ti-arrows-diff" style="font-size:15px"></i>開始比較分析
+      </button>
+      <div id="cmp-status"></div>
+      <div id="cmp-result"></div>
+    </div>
+
+    <!-- 產品資料庫 -->
+    <div class="panel" id="panel-db">
+      <div class="stats-row" id="stats-row"></div>
+      <div class="db-toolbar">
+        <input type="text" id="db-search" placeholder="搜尋料號、名稱…" oninput="renderTable()">
+        <button class="btn btn-teal" onclick="openForm()"><i class="ti ti-plus" style="font-size:13px"></i>新增</button>
+        <button class="btn btn-ghost" onclick="importSample()"><i class="ti ti-download"
+            style="font-size:13px"></i>範例</button>
+        <button class="btn btn-ghost" onclick="exportDB()"><i class="ti ti-file-export"
+            style="font-size:13px"></i>匯出</button>
+        <label class="btn btn-ghost" style="cursor:pointer"><i class="ti ti-file-import"
+            style="font-size:13px"></i>匯入<input type="file" accept=".json" style="display:none"
+            onchange="importDB(this)"></label>
+      </div>
+      <div id="form-area"></div>
+      <div id="table-wrap"></div>
+    </div>
   </div>
 
-  <!-- 選品比較 -->
-  <div class="panel" id="panel-compare">
-    <div style="font-size:11px;color:var(--line2);font-family:var(--mono);margin-bottom:6px;display:flex;align-items:center;gap:8px">
-      <span id="sel-hint">點選產品 A，再點選產品 B</span>
-      <button class="btn btn-ghost btn-sm" onclick="resetSel()" style="margin-left:auto">重選</button>
-    </div>
-    <div class="prod-grid" id="cmp-grid"></div>
-    <button class="run-btn" id="cmp-run" onclick="runCompare()" disabled>
-      <i class="ti ti-arrows-diff" style="font-size:15px"></i>開始比較分析
-    </button>
-    <div id="cmp-status"></div>
-    <div id="cmp-result"></div>
-  </div>
+  <script>
+    const STORE = 'floordb_gemini';
+    let db = [], editId = null, selA = null, selB = null;
+    let uploadFile1 = null, uploadB641 = null, uploadMime1 = null;
+    let uploadFile2 = null, uploadB642 = null, uploadMime2 = null;
+    let apiKey = '';
+    let currentModel = 'gemini-2.0-flash';
 
-  <!-- 產品資料庫 -->
-  <div class="panel" id="panel-db">
-    <div class="stats-row" id="stats-row"></div>
-    <div class="db-toolbar">
-      <input type="text" id="db-search" placeholder="搜尋料號、名稱…" oninput="renderTable()">
-      <button class="btn btn-teal" onclick="openForm()"><i class="ti ti-plus" style="font-size:13px"></i>新增</button>
-      <button class="btn btn-ghost" onclick="importSample()"><i class="ti ti-download" style="font-size:13px"></i>範例</button>
-      <button class="btn btn-ghost" onclick="exportDB()"><i class="ti ti-file-export" style="font-size:13px"></i>匯出</button>
-      <label class="btn btn-ghost" style="cursor:pointer"><i class="ti ti-file-import" style="font-size:13px"></i>匯入<input type="file" accept=".json" style="display:none" onchange="importDB(this)"></label>
-    </div>
-    <div id="form-area"></div>
-    <div id="table-wrap"></div>
-  </div>
-</div>
+    const GEMINI_URL = (key, model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
-<script>
-const STORE='floordb_gemini';
-let db=[], editId=null, selA=null, selB=null;
-let uploadFile1=null, uploadB641=null, uploadMime1=null;
-let uploadFile2=null, uploadB642=null, uploadMime2=null;
-let apiKey=''; 
-let currentModel='gemini-2.0-flash';
+    function setKeyStatus(msg, type) {
+      const el = document.getElementById('key-status');
+      if (el) { el.textContent = msg; el.className = 'key-status ' + (type === 'ok' ? 'key-ok' : 'key-err'); }
+    }
 
-const GEMINI_URL = (key, model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    async function testKey() {
+      const k = document.getElementById('api-key-input').value.trim();
+      if (!k) { setKeyStatus('請先輸入金鑰', 'err'); return; }
+      if (!k.startsWith('AIza')) { setKeyStatus('格式不對，Gemini 金鑰以 AIza 開頭', 'err'); return; }
+      setKeyStatus('測試中…', '');
+      try {
+        const r = await fetch(GEMINI_URL(k, currentModel), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: '回覆OK兩字' }] }] })
+        });
+        const d = await r.json();
+        if (d.error) throw new Error(d.error.message);
 
-function setKeyStatus(msg,type){
-  const el=document.getElementById('key-status');
-  if(el) { el.textContent=msg; el.className='key-status '+(type==='ok'?'key-ok':'key-err'); }
-}
+        apiKey = k;
+        try { localStorage.setItem('floor_gemini_key', k); } catch (e) { }
+        setKeyStatus('✓ 連線成功！AI 功能可正常使用', 'ok');
+        document.getElementById('setup-card').classList.add('ok');
+        updateSendBtn(); updateCmpBtn();
+      } catch (e) {
+        setKeyStatus('✗ ' + e.message, 'err');
+      }
+    }
 
-async function testKey(){
-  const k=document.getElementById('api-key-input').value.trim();
-  if(!k){setKeyStatus('請先輸入金鑰','err');return;}
-  if(!k.startsWith('AIza')){setKeyStatus('格式不對，Gemini 金鑰以 AIza 開頭','err');return;}
-  setKeyStatus('測試中…','');
-  try{
-    const r=await fetch(GEMINI_URL(k, currentModel),{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:'回覆OK兩字'}]}]})
-    });
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message);
-    
-    apiKey=k;
-    try{localStorage.setItem('floor_gemini_key',k);}catch(e){}
-    setKeyStatus('✓ 連線成功！AI 功能可正常使用','ok');
-    document.getElementById('setup-card').classList.add('ok');
-    updateSendBtn(); updateCmpBtn();
-  }catch(e){
-    setKeyStatus('✗ '+e.message,'err');
-  }
-}
+    async function callGemini(parts, maxTokens = 3000) {
+      if (!apiKey) throw new Error('請先設定 Gemini API 金鑰');
+      const r = await fetch(GEMINI_URL(apiKey, currentModel), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: { maxOutputTokens: maxTokens, temperature: 0.3 }
+        })
+      });
+      const d = await r.json();
+      if (d.error) throw new Error(d.error.message);
+      return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
 
-async function callGemini(parts, maxTokens=3000){
-  if(!apiKey) throw new Error('請先設定 Gemini API 金鑰');
-  const r=await fetch(GEMINI_URL(apiKey, currentModel),{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      contents:[{parts}],
-      generationConfig:{maxOutputTokens:maxTokens,temperature:0.3}
-    })
-  });
-  const d=await r.json();
-  if(d.error) throw new Error(d.error.message);
-  return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
-}
+    function save() { try { localStorage.setItem(STORE, JSON.stringify(db)); } catch (e) { } }
+    function load() { try { const d = localStorage.getItem(STORE); if (d) db = JSON.parse(d); } catch (e) { } }
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
 
-function save(){try{localStorage.setItem(STORE,JSON.stringify(db));}catch(e){}}
-function load(){try{const d=localStorage.getItem(STORE);if(d)db=JSON.parse(d);}catch(e){}}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+    const SAMPLE = [
+      { id: uid(), sku: 'FLR-001', name: '美綻 Advanced', type: '超耐磨', underlay: '鋁箔發泡布', underlay_mm: 2.0, length: 1380, width: 193, thickness: 8, wear_layer: 0.3, finish_h: 10, ac: 'AC4', fire: 'CNS 7614 1級', slip: 'COF>0.55', formaldehyde: 'E1 <0.05ppm', sound: '未標示', version: '2024.11.27', note: '商業場所' },
+      { id: uid(), sku: 'FLR-002', name: '美緻 Exquisit Plus', type: '超耐磨', underlay: '波浪隔音墊', underlay_mm: 2.3, length: 1380, width: 193, thickness: 8, wear_layer: 0.3, finish_h: 10.3, ac: 'AC4', fire: 'CNS 7614 1級', slip: '未標示', formaldehyde: 'E1 <0.05ppm', sound: 'ΔLw≧17dB', version: '2024.05.21', note: '住宅高樓層' },
+    ];
+    function importSample() { db = [...SAMPLE.map(p => ({ ...p, id: uid() }))]; save(); renderStats(); renderTable(); updateDbSub(); renderDbSelect(); }
+    function exportDB() { const b = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = '地板資料庫-' + new Date().toISOString().slice(0, 10) + '.json'; a.click(); }
+    function importDB(inp) { const f = inp.files[0]; if (!f) return; const r = new FileReader(); r.onload = e => { try { db = JSON.parse(e.target.result); save(); renderStats(); renderTable(); updateDbSub(); renderDbSelect(); alert('匯入成功'); } catch (err) { alert('格式錯誤'); } }; r.readAsText(f); }
 
-const SAMPLE=[
-  {id:uid(),sku:'FLR-001',name:'美綻 Advanced',type:'超耐磨',underlay:'鋁箔發泡布',underlay_mm:2.0,length:1380,width:193,thickness:8,wear_layer:0.3,finish_h:10,ac:'AC4',fire:'CNS 7614 1級',slip:'COF>0.55',formaldehyde:'E1 <0.05ppm',sound:'未標示',version:'2024.11.27',note:'商業場所'},
-  {id:uid(),sku:'FLR-002',name:'美緻 Exquisit Plus',type:'超耐磨',underlay:'波浪隔音墊',underlay_mm:2.3,length:1380,width:193,thickness:8,wear_layer:0.3,finish_h:10.3,ac:'AC4',fire:'CNS 7614 1級',slip:'未標示',formaldehyde:'E1 <0.05ppm',sound:'ΔLw≧17dB',version:'2024.05.21',note:'住宅高樓層'},
-];
-function importSample(){db=[...SAMPLE.map(p=>({...p,id:uid()}))];save();renderStats();renderTable();updateDbSub();renderDbSelect();}
-function exportDB(){const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='地板資料庫-'+new Date().toISOString().slice(0,10)+'.json';a.click();}
-function importDB(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{db=JSON.parse(e.target.result);save();renderStats();renderTable();updateDbSub();renderDbSelect();alert('匯入成功');}catch(err){alert('格式錯誤');}};r.readAsText(f);}
+    function setMode(m) {
+      ['upload', 'compare', 'db'].forEach(x => {
+        document.getElementById('btn-' + x).classList.toggle('active', x === m);
+        document.getElementById('panel-' + x).classList.toggle('show', x === m);
+      });
+      if (m === 'compare') renderCmpGrid();
+      if (m === 'db') { renderStats(); renderTable(); }
+      updateDbSub();
+    }
+    function updateDbSub() { document.getElementById('db-sub').textContent = db.length ? db.length + '個產品' : '新增 / 管理'; }
 
-function setMode(m){
-  ['upload','compare','db'].forEach(x=>{
-    document.getElementById('btn-'+x).classList.toggle('active',x===m);
-    document.getElementById('panel-'+x).classList.toggle('show',x===m);
-  });
-  if(m==='compare')renderCmpGrid();
-  if(m==='db'){renderStats();renderTable();}
-  updateDbSub();
-}
-function updateDbSub(){document.getElementById('db-sub').textContent=db.length?db.length+'個產品':'新增 / 管理';}
+    function refreshUploadPreview() {
+      const p1 = document.getElementById('preview1');
+      const p2 = document.getElementById('preview2');
+      if (uploadFile1) p1.innerHTML = `<div style="margin-top:8px;padding:6px 10px;background:#f5f3ee;border-radius:4px;display:inline-flex;align-items:center;gap:8px;"><i class="ti ti-file-check" style="color:var(--green)"></i> ${uploadFile1.name} <button onclick="removeFile(1, event)" style="background:none;border:none;color:var(--red);cursor:pointer;padding:0;"><i class="ti ti-trash"></i></button></div>`; else p1.innerHTML = '';
+      if (uploadFile2) p2.innerHTML = `<div style="margin-top:8px;padding:6px 10px;background:#f5f3ee;border-radius:4px;display:inline-flex;align-items:center;gap:8px;"><i class="ti ti-file-check" style="color:var(--green)"></i> ${uploadFile2.name} <button onclick="removeFile(2, event)" style="background:none;border:none;color:var(--red);cursor:pointer;padding:0;"><i class="ti ti-trash"></i></button></div>`; else p2.innerHTML = '';
+    }
 
-function refreshUploadPreview(){
-  const p1=document.getElementById('preview1');
-  const p2=document.getElementById('preview2');
-  if(uploadFile1) p1.innerHTML=`<div style="margin-top:8px;padding:6px 10px;background:#f5f3ee;border-radius:4px;display:inline-flex;align-items:center;gap:8px;"><i class="ti ti-file-check" style="color:var(--green)"></i> ${uploadFile1.name} <button onclick="removeFile(1, event)" style="background:none;border:none;color:var(--red);cursor:pointer;padding:0;"><i class="ti ti-trash"></i></button></div>`; else p1.innerHTML='';
-  if(uploadFile2) p2.innerHTML=`<div style="margin-top:8px;padding:6px 10px;background:#f5f3ee;border-radius:4px;display:inline-flex;align-items:center;gap:8px;"><i class="ti ti-file-check" style="color:var(--green)"></i> ${uploadFile2.name} <button onclick="removeFile(2, event)" style="background:none;border:none;color:var(--red);cursor:pointer;padding:0;"><i class="ti ti-trash"></i></button></div>`; else p2.innerHTML='';
-}
+    function removeFile(num, e) {
+      e.stopPropagation();
+      if (num === 1) { uploadFile1 = null; uploadB641 = null; uploadMime1 = null; document.getElementById('file-in1').value = ''; }
+      if (num === 2) { uploadFile2 = null; uploadB642 = null; uploadMime2 = null; document.getElementById('file-in2').value = ''; }
+      refreshUploadPreview();
+      updateSendBtn();
+    }
 
-function removeFile(num, e) {
-  e.stopPropagation();
-  if(num === 1) { uploadFile1=null; uploadB641=null; uploadMime1=null; document.getElementById('file-in1').value=''; }
-  if(num === 2) { uploadFile2=null; uploadB642=null; uploadMime2=null; document.getElementById('file-in2').value=''; }
-  refreshUploadPreview();
-  updateSendBtn();
-}
+    function updateSendBtn() {
+      const btn = document.getElementById('upload-btn');
+      const lbl = document.getElementById('send-label');
+      if (!uploadFile1) { btn.disabled = true; lbl.textContent = '請先上傳第一份檔案 (基準)'; return; }
+      const mode = document.querySelector('input[name="cmp-mode"]:checked').value;
+      if (mode === 'db') {
+        if (!db.length) { btn.disabled = true; lbl.textContent = '請先到資料庫新增產品'; return; }
+        btn.disabled = false; lbl.textContent = 'AI 分析並與已勾選產品比對';
+      } else {
+        if (!uploadFile2) { btn.disabled = true; lbl.textContent = '請先上傳第二份檔案 (比對)'; return; }
+        btn.disabled = false; lbl.textContent = 'AI 雙檔比對分析';
+      }
+    }
+    function toggleCmpMode() {
+      const mode = document.querySelector('input[name="cmp-mode"]:checked').value;
+      document.getElementById('file2-group').style.display = (mode === 'file') ? 'block' : 'none';
+      document.getElementById('db-select-wrap').style.display = (mode === 'db') ? 'flex' : 'none';
+      updateSendBtn();
+    }
+    function updateCmpBtn() {
+      const btn = document.getElementById('cmp-run');
+      if (btn) btn.disabled = !(selA && selB);
+    }
+    function onDrag(e, on, idx = 1) { e.preventDefault(); document.getElementById(idx === 1 ? 'dropzone' : 'dropzone2').classList.toggle('drag', on); }
+    function onDrop(e, idx = 1) { e.preventDefault(); onDrag(e, false, idx); const f = e.dataTransfer.files[0]; if (f) handleFile(f, idx); }
+    function loadFile(inp, idx = 1) { if (inp.files[0]) handleFile(inp.files[0], idx); }
+    function handleFile(f, idx = 1) {
+      if (idx === 1) { uploadFile1 = f; uploadMime1 = f.type; }
+      else { uploadFile2 = f; uploadMime2 = f.type; }
+      const r = new FileReader();
+      r.onload = e => {
+        const b64 = e.target.result.split(',')[1];
+        if (idx === 1) uploadB641 = b64;
+        else uploadB642 = b64;
+        document.getElementById(idx === 1 ? 'dropzone' : 'dropzone2').classList.add('has-file');
+        refreshUploadPreview();
+        updateSendBtn();
+      };
+      r.readAsDataURL(f);
+    }
 
-function updateSendBtn(){
-  const btn=document.getElementById('upload-btn');
-  const lbl=document.getElementById('send-label');
-  if(!uploadFile1){btn.disabled=true;lbl.textContent='請先上傳第一份檔案 (基準)';return;}
-  const mode = document.querySelector('input[name="cmp-mode"]:checked').value;
-  if(mode === 'db'){
-    if(!db.length){btn.disabled=true;lbl.textContent='請先到資料庫新增產品';return;}
-    btn.disabled=false;lbl.textContent='AI 分析並與已勾選產品比對';
-  } else {
-    if(!uploadFile2){btn.disabled=true;lbl.textContent='請先上傳第二份檔案 (比對)';return;}
-    btn.disabled=false;lbl.textContent='AI 雙檔比對分析';
-  }
-}
-function toggleCmpMode() {
-  const mode = document.querySelector('input[name="cmp-mode"]:checked').value;
-  document.getElementById('file2-group').style.display = (mode === 'file') ? 'block' : 'none';
-  document.getElementById('db-select-wrap').style.display = (mode === 'db') ? 'flex' : 'none';
-  updateSendBtn();
-}
-function updateCmpBtn(){
-  const btn=document.getElementById('cmp-run');
-  if(btn)btn.disabled=!(selA&&selB);
-}
-function onDrag(e,on,idx=1){e.preventDefault();document.getElementById(idx===1?'dropzone':'dropzone2').classList.toggle('drag',on);}
-function onDrop(e,idx=1){e.preventDefault();onDrag(e,false,idx);const f=e.dataTransfer.files[0];if(f)handleFile(f,idx);}
-function loadFile(inp,idx=1){if(inp.files[0])handleFile(inp.files[0],idx);}
-function handleFile(f,idx=1){
-  if(idx===1){uploadFile1=f; uploadMime1=f.type;}
-  else{uploadFile2=f; uploadMime2=f.type;}
-  const r=new FileReader();
-  r.onload=e=>{
-    const b64=e.target.result.split(',')[1];
-    if(idx===1) uploadB641=b64;
-    else uploadB642=b64;
-    document.getElementById(idx===1?'dropzone':'dropzone2').classList.add('has-file');
-    refreshUploadPreview();
-    updateSendBtn();
-  };
-  r.readAsDataURL(f);
-}
+    async function runUpload() {
+      const mode = document.querySelector('input[name="cmp-mode"]:checked').value;
+      if (!uploadFile1) return;
+      if (!apiKey) { alert('請先在上方輸入並儲存 API 金鑰！'); return; }
 
-async function runUpload(){
-  const mode = document.querySelector('input[name="cmp-mode"]:checked').value;
-  if(!uploadFile1) return;
-  if(!apiKey) { alert('請先在上方輸入並儲存 API 金鑰！'); return; }
-  
-  let selectedDb = [];
-  if(mode === 'db') {
-    const checkedIds = Array.from(document.querySelectorAll('.db-prod-cb:checked')).map(cb=>cb.value);
-    selectedDb = db.filter(p => checkedIds.includes(p.id));
-    if(selectedDb.length === 0) return alert('請至少選擇一項資料庫產品進行比對');
-  } else if(mode === 'file' && !uploadFile2) return;
-  
-  const btn=document.getElementById('upload-btn');
-  const status=document.getElementById('upload-status');
-  const result=document.getElementById('upload-result');
-  btn.disabled=true;result.innerHTML='';
-  let prog=0;
-  status.innerHTML=`<div class="status s-info"><div class="spinner"></div><div style="flex:1">AI 正在解析並比對…<div class="prog-wrap"><div class="prog-bar" id="prog"></div></div></div></div>`;
-  const iv=setInterval(()=>{prog=Math.min(prog+5,88);const el=document.getElementById('prog');if(el)el.style.width=prog+'%';},400);
-  
-  let parts = [];
-  
-  if(mode === 'db'){
-    const dbDetail=selectedDb.map((p,i)=>`【產品${i+1}】${p.name}（${p.sku||'無料號'}）\n  類型:${p.type||'?'} 底墊:${p.underlay||'?'}${p.underlay_mm||'?'}mm 完成面高:${p.finish_h||'?'}mm\n  尺寸:${p.length||'?'}×${p.width||'?'}×${p.thickness||'?'}mm 耐磨層:${p.wear_layer||'?'}mm\n  AC:${p.ac||'?'} 防焰:${p.fire||'?'} 防滑:${p.slip||'?'} 甲醛:${p.formaldehyde||'?'} 隔音:${p.sound||'?'}\n  版本:${p.version||'?'} 備註:${p.note||'無'}`).join('\n\n');
-    const prompt=`你是專業的地板規範專家。請仔細進行全面向的比對分析。\n請**絕對不要**輸出任何問候語或多餘的文字敘述，直接給出以下兩項內容即可：\n\n1. **規格對照表**：使用 Markdown 表格，欄位嚴格包含「項目」、「原規範」、「資料庫產品名稱」、「結果(符合/優/不符合/未提及)」。\n2. **優劣分析與結論**：請再繪製第二個 Markdown 表格，欄位必須是「評估項目」與「詳細說明」。\n\n**嚴格限制**：資料庫產品的名稱必須完全照抄我提供的名稱，禁止縮寫、修改、翻譯或捏造。\n\n═══ 資料庫產品（共${selectedDb.length}個）═══\n${dbDetail}`;
-    parts=[{inlineData:{mimeType:uploadMime1,data:uploadB641}}, {text:prompt}];
-  } else {
-    const prompt=`你是專業的地板規範專家。請仔細分析兩份文件，直接給出「規格對照表」與「優劣分析」的 Markdown 表格。嚴格限制：禁止自行修改任何產品名稱。`;
-    parts=[{text:"第一份文件 (基準)："}, {inlineData:{mimeType:uploadMime1,data:uploadB641}}, {text:"第二份文件 (產品)："}, {inlineData:{mimeType:uploadMime2,data:uploadB642}}, {text:prompt}];
-  }
-  
-  try{
-    const text=await callGemini(parts,3000);
-    clearInterval(iv);
-    document.getElementById('prog')&&(document.getElementById('prog').style.width='100%');
-    setTimeout(()=>{
-      status.innerHTML=`<div class="status s-ok"><i class="ti ti-circle-check" style="font-size:15px;flex-shrink:0"></i>分析完成！</div>`;
-      result.innerHTML=`<div class="result-wrap">
+      let selectedDb = [];
+      if (mode === 'db') {
+        const checkedIds = Array.from(document.querySelectorAll('.db-prod-cb:checked')).map(cb => cb.value);
+        selectedDb = db.filter(p => checkedIds.includes(p.id));
+        if (selectedDb.length === 0) return alert('請至少選擇一項資料庫產品進行比對');
+      } else if (mode === 'file' && !uploadFile2) return;
+
+      const btn = document.getElementById('upload-btn');
+      const status = document.getElementById('upload-status');
+      const result = document.getElementById('upload-result');
+      btn.disabled = true; result.innerHTML = '';
+      let prog = 0;
+      status.innerHTML = `<div class="status s-info"><div class="spinner"></div><div style="flex:1">AI 正在解析並比對…<div class="prog-wrap"><div class="prog-bar" id="prog"></div></div></div></div>`;
+      const iv = setInterval(() => { prog = Math.min(prog + 5, 88); const el = document.getElementById('prog'); if (el) el.style.width = prog + '%'; }, 400);
+
+      let parts = [];
+
+      if (mode === 'db') {
+        const dbDetail = selectedDb.map((p, i) => `【產品${i + 1}】${p.name}（${p.sku || '無料號'}）\n  類型:${p.type || '?'} 底墊:${p.underlay || '?'}${p.underlay_mm || '?'}mm 完成面高:${p.finish_h || '?'}mm\n  尺寸:${p.length || '?'}×${p.width || '?'}×${p.thickness || '?'}mm 耐磨層:${p.wear_layer || '?'}mm\n  AC:${p.ac || '?'} 防焰:${p.fire || '?'} 防滑:${p.slip || '?'} 甲醛:${p.formaldehyde || '?'} 隔音:${p.sound || '?'}\n  版本:${p.version || '?'} 備註:${p.note || '無'}`).join('\n\n');
+        const prompt = `你是專業的地板規範專家。請仔細進行全面向的比對分析。\n請**絕對不要**輸出任何問候語或多餘的文字敘述，直接給出以下兩項內容即可：\n\n1. **規格對照表**：使用 Markdown 表格，欄位嚴格包含「項目」、「原規範」、「資料庫產品名稱」、「結果(符合/優/不符合/未提及)」。\n2. **優劣分析與結論**：請再繪製第二個 Markdown 表格，欄位必須是「評估項目」與「詳細說明」。\n\n**嚴格限制**：資料庫產品的名稱必須完全照抄我提供的名稱，禁止縮寫、修改、翻譯或捏造。\n\n═══ 資料庫產品（共${selectedDb.length}個）═══\n${dbDetail}`;
+        parts = [{ inlineData: { mimeType: uploadMime1, data: uploadB641 } }, { text: prompt }];
+      } else {
+        const prompt = `你是專業的地板規範專家。請仔細分析兩份文件，直接給出「規格對照表」與「優劣分析」的 Markdown 表格。嚴格限制：禁止自行修改任何產品名稱。`;
+        parts = [{ text: "第一份文件 (基準)：" }, { inlineData: { mimeType: uploadMime1, data: uploadB641 } }, { text: "第二份文件 (產品)：" }, { inlineData: { mimeType: uploadMime2, data: uploadB642 } }, { text: prompt }];
+      }
+
+      try {
+        const text = await callGemini(parts, 3000);
+        clearInterval(iv);
+        document.getElementById('prog') && (document.getElementById('prog').style.width = '100%');
+        setTimeout(() => {
+          status.innerHTML = `<div class="status s-ok"><i class="ti ti-circle-check" style="font-size:15px;flex-shrink:0"></i>分析完成！</div>`;
+          result.innerHTML = `<div class="result-wrap">
         <div class="result-card"><h3>AI 比對分析報告</h3><div class="ai-content">${renderMD(text)}</div></div>
         <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
           <button class="btn btn-ghost btn-sm" onclick="exportToCSV(this)"><i class="ti ti-file-spreadsheet"></i> 下載 Excel (CSV)</button>
@@ -436,147 +1221,147 @@ async function runUpload(){
           <button class="btn btn-ghost btn-sm" onclick="resetUpload()" style="margin-left:auto"><i class="ti ti-trash"></i> 一鍵清除</button>
         </div>
       </div>`;
-      btn.disabled=false;
-    },300);
-  }catch(e){
-    clearInterval(iv);
-    status.innerHTML=`<div class="status s-err"><i class="ti ti-alert-circle" style="font-size:15px;flex-shrink:0"></i>${e.message}</div>`;
-    btn.disabled=false;
-  }
-}
-
-function resetUpload() {
-  try {
-    removeFile(1);
-    removeFile(2);
-    document.querySelectorAll('.db-prod-cb').forEach(cb => cb.checked = false);
-    const fileRadio = document.querySelector('input[name="cmp-mode"][value="file"]');
-    if(fileRadio) {
-      fileRadio.checked = true;
-      toggleCmpMode();
+          btn.disabled = false;
+        }, 300);
+      } catch (e) {
+        clearInterval(iv);
+        status.innerHTML = `<div class="status s-err"><i class="ti ti-alert-circle" style="font-size:15px;flex-shrink:0"></i>${e.message}</div>`;
+        btn.disabled = false;
+      }
     }
-    window.scrollTo(0, 0);
-  } catch(e) {
-    console.error('Reset UI error:', e);
-  }
-  
-  setTimeout(() => {
-    const res = document.getElementById('upload-result');
-    if(res) res.innerHTML = '';
-    const sta = document.getElementById('upload-status');
-    if(sta) sta.innerHTML = '';
-  }, 50);
-}
 
-function renderCmpGrid(){
-  if(!db.length){document.getElementById('cmp-grid').innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-icon"><i class="ti ti-database-off"></i></div>資料庫為空</div>`;return;}
-  document.getElementById('cmp-grid').innerHTML=db.map(p=>`
+    function resetUpload() {
+      try {
+        removeFile(1);
+        removeFile(2);
+        document.querySelectorAll('.db-prod-cb').forEach(cb => cb.checked = false);
+        const fileRadio = document.querySelector('input[name="cmp-mode"][value="file"]');
+        if (fileRadio) {
+          fileRadio.checked = true;
+          toggleCmpMode();
+        }
+        window.scrollTo(0, 0);
+      } catch (e) {
+        console.error('Reset UI error:', e);
+      }
+
+      setTimeout(() => {
+        const res = document.getElementById('upload-result');
+        if (res) res.innerHTML = '';
+        const sta = document.getElementById('upload-status');
+        if (sta) sta.innerHTML = '';
+      }, 50);
+    }
+
+    function renderCmpGrid() {
+      if (!db.length) { document.getElementById('cmp-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon"><i class="ti ti-database-off"></i></div>資料庫為空</div>`; return; }
+      document.getElementById('cmp-grid').innerHTML = db.map(p => `
     <div class="prod-card" id="cc-${p.id}" onclick="selProd('${p.id}')">
-      ${selA===p.id?'<span class="sel-badge sel-badge-a">A</span>':''}
-      ${selB===p.id?'<span class="sel-badge sel-badge-b">B</span>':''}
+      ${selA === p.id ? '<span class="sel-badge sel-badge-a">A</span>' : ''}
+      ${selB === p.id ? '<span class="sel-badge sel-badge-b">B</span>' : ''}
       <div style="font-weight:500;font-size:13px;margin-bottom:2px;padding-right:28px">${p.name}</div>
-      <div style="font-size:11px;color:var(--line2);font-family:var(--mono)">${p.underlay||'?'} ${p.underlay_mm||''}mm</div>
+      <div style="font-size:11px;color:var(--line2);font-family:var(--mono)">${p.underlay || '?'} ${p.underlay_mm || ''}mm</div>
     </div>`).join('');
-}
-function selProd(id){
-  if(!selA){selA=id;document.getElementById('sel-hint').textContent='已選 A，請點選產品 B';}
-  else if(!selB&&id!==selA){selB=id;document.getElementById('sel-hint').textContent='✓ 已選好';}
-  else{resetSel();selProd(id);return;}
-  renderCmpGrid();updateCmpBtn();
-}
-function resetSel(){
-  selA=null;selB=null;
-  document.getElementById('cmp-run').disabled=true;
-  document.getElementById('sel-hint').textContent='點選產品 A，再點選產品 B';
-  const res = document.getElementById('cmp-result');
-  if(res) res.innerHTML = '';
-  const sta = document.getElementById('cmp-status');
-  if(sta) sta.innerHTML = '';
-  renderCmpGrid();
-}
-function generateLocalComparison(pA, pB) {
-  const v = (val, suffix='') => val ? val + suffix : '未標示';
-  const cmp = (vA, vB, isHigherBetter = false, isNumeric = false) => {
-    if(!vA && !vB) return '無資料';
-    if(vA === vB) return '平手';
-    if(isNumeric && vA && vB) {
-       const nA = parseFloat(vA), nB = parseFloat(vB);
-       if(!isNaN(nA) && !isNaN(nB)) {
-          if(nA > nB) return isHigherBetter ? `優點` : `劣勢`;
-          if(nA < nB) return isHigherBetter ? `劣勢` : `優點`;
-       }
     }
-    return '差異';
-  };
+    function selProd(id) {
+      if (!selA) { selA = id; document.getElementById('sel-hint').textContent = '已選 A，請點選產品 B'; }
+      else if (!selB && id !== selA) { selB = id; document.getElementById('sel-hint').textContent = '✓ 已選好'; }
+      else { resetSel(); selProd(id); return; }
+      renderCmpGrid(); updateCmpBtn();
+    }
+    function resetSel() {
+      selA = null; selB = null;
+      document.getElementById('cmp-run').disabled = true;
+      document.getElementById('sel-hint').textContent = '點選產品 A，再點選產品 B';
+      const res = document.getElementById('cmp-result');
+      if (res) res.innerHTML = '';
+      const sta = document.getElementById('cmp-status');
+      if (sta) sta.innerHTML = '';
+      renderCmpGrid();
+    }
+    function generateLocalComparison(pA, pB) {
+      const v = (val, suffix = '') => val ? val + suffix : '未標示';
+      const cmp = (vA, vB, isHigherBetter = false, isNumeric = false) => {
+        if (!vA && !vB) return '無資料';
+        if (vA === vB) return '平手';
+        if (isNumeric && vA && vB) {
+          const nA = parseFloat(vA), nB = parseFloat(vB);
+          if (!isNaN(nA) && !isNaN(nB)) {
+            if (nA > nB) return isHigherBetter ? `優點` : `劣勢`;
+            if (nA < nB) return isHigherBetter ? `劣勢` : `優點`;
+          }
+        }
+        return '差異';
+      };
 
-  const getACLevel = ac => {
-    if(!ac) return 0;
-    const m = ac.match(/AC(\d)/i);
-    return m ? parseInt(m[1]) : 0;
-  };
-  
-  const acA = getACLevel(pA.ac), acB = getACLevel(pB.ac);
-  let acResA = '平手', acResB = '平手';
-  if(acA > acB && acA > 0) { acResA = '優點'; acResB = '劣勢'; }
-  else if(acB > acA && acB > 0) { acResA = '劣勢'; acResB = '優點'; }
-  else if (pA.ac !== pB.ac) { acResA = '差異'; acResB = '差異'; }
+      const getACLevel = ac => {
+        if (!ac) return 0;
+        const m = ac.match(/AC(\d)/i);
+        return m ? parseInt(m[1]) : 0;
+      };
 
-  let md = `| 項目 | ${pA.name} | ${pB.name} |\n`;
-  md += `|---|---|---|\n`;
-  md += `| 類型 | ${v(pA.type)} | ${v(pB.type)} |\n`;
-  md += `| 尺寸 (長×寬×厚) | ${v(pA.length)}×${v(pA.width)}×${v(pA.thickness)}mm | ${v(pB.length)}×${v(pB.width)}×${v(pB.thickness)}mm |\n`;
-  md += `| 完成面高度 | ${v(pA.finish_h, 'mm')} | ${v(pB.finish_h, 'mm')} |\n`;
-  md += `| 耐磨層厚度 | ${v(pA.wear_layer, 'mm')} | ${v(pB.wear_layer, 'mm')} |\n`;
-  md += `| 磨耗等級 | ${v(pA.ac)} ${acResA==='優點'?'⭐':''} | ${v(pB.ac)} ${acResB==='優點'?'⭐':''} |\n`;
-  md += `| 防焰等級 | ${v(pA.fire)} | ${v(pB.fire)} |\n`;
-  md += `| 防滑係數 | ${v(pA.slip)} | ${v(pB.slip)} |\n`;
-  md += `| 甲醛釋出 | ${v(pA.formaldehyde)} | ${v(pB.formaldehyde)} |\n`;
-  md += `| 隔音認證 | ${v(pA.sound)} | ${v(pB.sound)} |\n`;
+      const acA = getACLevel(pA.ac), acB = getACLevel(pB.ac);
+      let acResA = '平手', acResB = '平手';
+      if (acA > acB && acA > 0) { acResA = '優點'; acResB = '劣勢'; }
+      else if (acB > acA && acB > 0) { acResA = '劣勢'; acResB = '優點'; }
+      else if (pA.ac !== pB.ac) { acResA = '差異'; acResB = '差異'; }
 
-  let advA = [];
-  let advB = [];
-  
-  if(acA > acB) advA.push('具有較高的 AC 磨耗等級，表面更耐刮磨');
-  if(acB > acA) advB.push('具有較高的 AC 磨耗等級，表面更耐刮磨');
-  if(pA.wear_layer > pB.wear_layer) advA.push('耐磨層較厚，長期使用壽命更佳');
-  if(pB.wear_layer > pA.wear_layer) advB.push('耐磨層較厚，長期使用壽命更佳');
-  if(pA.sound && pA.sound !== '未標示' && (!pB.sound || pB.sound === '未標示')) advA.push('具備明確的隔音數據或認證，樓板降噪效果更佳');
-  if(pB.sound && pB.sound !== '未標示' && (!pA.sound || pA.sound === '未標示')) advB.push('具備明確的隔音數據或認證，樓板降噪效果更佳');
-  if(pA.finish_h < pB.finish_h && pA.finish_h > 0) advA.push('完成面高度較低，適合對高度受限的案場（如：門檻銜接）');
-  if(pB.finish_h < pA.finish_h && pB.finish_h > 0) advB.push('完成面高度較低，適合對高度受限的案場（如：門檻銜接）');
+      let md = `| 項目 | ${pA.name} | ${pB.name} |\n`;
+      md += `|---|---|---|\n`;
+      md += `| 類型 | ${v(pA.type)} | ${v(pB.type)} |\n`;
+      md += `| 尺寸 (長×寬×厚) | ${v(pA.length)}×${v(pA.width)}×${v(pA.thickness)}mm | ${v(pB.length)}×${v(pB.width)}×${v(pB.thickness)}mm |\n`;
+      md += `| 完成面高度 | ${v(pA.finish_h, 'mm')} | ${v(pB.finish_h, 'mm')} |\n`;
+      md += `| 耐磨層厚度 | ${v(pA.wear_layer, 'mm')} | ${v(pB.wear_layer, 'mm')} |\n`;
+      md += `| 磨耗等級 | ${v(pA.ac)} ${acResA === '優點' ? '⭐' : ''} | ${v(pB.ac)} ${acResB === '優點' ? '⭐' : ''} |\n`;
+      md += `| 防焰等級 | ${v(pA.fire)} | ${v(pB.fire)} |\n`;
+      md += `| 防滑係數 | ${v(pA.slip)} | ${v(pB.slip)} |\n`;
+      md += `| 甲醛釋出 | ${v(pA.formaldehyde)} | ${v(pB.formaldehyde)} |\n`;
+      md += `| 隔音認證 | ${v(pA.sound)} | ${v(pB.sound)} |\n`;
 
-  if(advA.length === 0) advA.push('各項規格表現平均');
-  if(advB.length === 0) advB.push('各項規格表現平均');
+      let advA = [];
+      let advB = [];
 
-  md += `\n\n`;
-  md += `| 評估項目 | 詳細說明 |\n`;
-  md += `|---|---|\n`;
-  md += `| 優勢：${pA.name} | ` + advA.map(x=>`• ${x}`).join('<br>') + ` |\n`;
-  md += `| 優勢：${pB.name} | ` + advB.map(x=>`• ${x}`).join('<br>') + ` |\n`;
-  
-  let rec = '兩款產品規格相近，建議依「花色外觀」與「預算」來做決定。';
-  if(acA > acB || advA.length > advB.length) rec = `若案場有較高耐磨或人流需求，**${pA.name}** 表現較突出；一般住宅則兩者皆可。`;
-  else if (acB > acA || advB.length > advA.length) rec = `若案場有較高耐磨或人流需求，**${pB.name}** 表現較突出；一般住宅則兩者皆可。`;
-  
-  md += `| 建議 | ${rec} |\n`;
+      if (acA > acB) advA.push('具有較高的 AC 磨耗等級，表面更耐刮磨');
+      if (acB > acA) advB.push('具有較高的 AC 磨耗等級，表面更耐刮磨');
+      if (pA.wear_layer > pB.wear_layer) advA.push('耐磨層較厚，長期使用壽命更佳');
+      if (pB.wear_layer > pA.wear_layer) advB.push('耐磨層較厚，長期使用壽命更佳');
+      if (pA.sound && pA.sound !== '未標示' && (!pB.sound || pB.sound === '未標示')) advA.push('具備明確的隔音數據或認證，樓板降噪效果更佳');
+      if (pB.sound && pB.sound !== '未標示' && (!pA.sound || pA.sound === '未標示')) advB.push('具備明確的隔音數據或認證，樓板降噪效果更佳');
+      if (pA.finish_h < pB.finish_h && pA.finish_h > 0) advA.push('完成面高度較低，適合對高度受限的案場（如：門檻銜接）');
+      if (pB.finish_h < pA.finish_h && pB.finish_h > 0) advB.push('完成面高度較低，適合對高度受限的案場（如：門檻銜接）');
 
-  return md;
-}
+      if (advA.length === 0) advA.push('各項規格表現平均');
+      if (advB.length === 0) advB.push('各項規格表現平均');
 
-async function runCompare(){
-  const pA=db.find(p=>p.id===selA),pB=db.find(p=>p.id===selB);
-  if(!pA||!pB)return;
-  const btn=document.getElementById('cmp-run');
-  const status=document.getElementById('cmp-status');
-  const result=document.getElementById('cmp-result');
-  btn.disabled=true;result.innerHTML='';
-  
-  if(!apiKey) {
-    status.innerHTML=`<div class="status s-info"><div class="spinner"></div><div style="flex:1">本機資料庫比對中…</div></div>`;
-    setTimeout(() => {
-      const text = generateLocalComparison(pA, pB);
-      status.innerHTML=`<div class="status s-ok"><i class="ti ti-circle-check" style="font-size:15px;flex-shrink:0"></i>秒速比對完成 (無須金鑰)！</div>`;
-      result.innerHTML=`<div class="result-wrap">
+      md += `\n\n`;
+      md += `| 評估項目 | 詳細說明 |\n`;
+      md += `|---|---|\n`;
+      md += `| 優勢：${pA.name} | ` + advA.map(x => `• ${x}`).join('<br>') + ` |\n`;
+      md += `| 優勢：${pB.name} | ` + advB.map(x => `• ${x}`).join('<br>') + ` |\n`;
+
+      let rec = '兩款產品規格相近，建議依「花色外觀」與「預算」來做決定。';
+      if (acA > acB || advA.length > advB.length) rec = `若案場有較高耐磨或人流需求，**${pA.name}** 表現較突出；一般住宅則兩者皆可。`;
+      else if (acB > acA || advB.length > advA.length) rec = `若案場有較高耐磨或人流需求，**${pB.name}** 表現較突出；一般住宅則兩者皆可。`;
+
+      md += `| 建議 | ${rec} |\n`;
+
+      return md;
+    }
+
+    async function runCompare() {
+      const pA = db.find(p => p.id === selA), pB = db.find(p => p.id === selB);
+      if (!pA || !pB) return;
+      const btn = document.getElementById('cmp-run');
+      const status = document.getElementById('cmp-status');
+      const result = document.getElementById('cmp-result');
+      btn.disabled = true; result.innerHTML = '';
+
+      if (!apiKey) {
+        status.innerHTML = `<div class="status s-info"><div class="spinner"></div><div style="flex:1">本機資料庫比對中…</div></div>`;
+        setTimeout(() => {
+          const text = generateLocalComparison(pA, pB);
+          status.innerHTML = `<div class="status s-ok"><i class="ti ti-circle-check" style="font-size:15px;flex-shrink:0"></i>秒速比對完成 (無須金鑰)！</div>`;
+          result.innerHTML = `<div class="result-wrap">
         <div class="result-card"><h3>${pA.name} vs ${pB.name} 本機比較報告</h3><div class="ai-content">${renderMD(text)}</div></div>
         <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
           <button class="btn btn-ghost btn-sm" onclick="exportToCSV(this)"><i class="ti ti-file-spreadsheet"></i> 下載 Excel (CSV)</button>
@@ -584,24 +1369,24 @@ async function runCompare(){
           <button class="btn btn-ghost btn-sm" onclick="resetSel()" style="margin-left:auto"><i class="ti ti-refresh"></i> 重新選擇</button>
         </div>
       </div>`;
-      btn.disabled=false;
-    }, 400);
-    return;
-  }
+          btn.disabled = false;
+        }, 400);
+        return;
+      }
 
-  let prog=0;
-  status.innerHTML=`<div class="status s-info"><div class="spinner"></div><div style="flex:1">AI 比較中…<div class="prog-wrap"><div class="prog-bar" id="prog2"></div></div></div></div>`;
-  const iv=setInterval(()=>{prog=Math.min(prog+10,88);const el=document.getElementById('prog2');if(el)el.style.width=prog+'%';},280);
-  
-  const fmt=p=>`【${p.name}】（${p.sku||'無料號'}）\n  類型:${p.type||'?'} 底墊:${p.underlay||'?'}${p.underlay_mm||'?'}mm 完成面高:${p.finish_h||'?'}mm\n  尺寸:${p.length||'?'}×${p.width||'?'}×${p.thickness||'?'}mm 耐磨層:${p.wear_layer||'?'}mm\n  AC:${p.ac||'?'} 防焰:${p.fire||'?'} 防滑:${p.slip||'?'} 甲醛:${p.formaldehyde||'?'} 隔音:${p.sound||'?'}\n  版本:${p.version||'?'} 備註:${p.note||'無'}`;
-  
-  try{
-    const prompt = `請詳細比較以下兩款資料庫產品，進行全面向的對照分析。\n\n**嚴格限制**：產品名稱必須完全照抄我提供的名稱，絕對禁止自行修改、翻譯或捏造。\n\n產品A資料：\n${fmt(pA)}\n\n產品B資料：\n${fmt(pB)}\n\n請**絕對不要**輸出任何問候語或多餘敘述，直接給出以下兩項內容：\n1. **規格對照表**：Markdown 表格，欄位為「項目」、「${pA.name}」、「${pB.name}」。\n2. **優劣分析與結論**：請再繪製第二個 Markdown 表格，欄位必須是「評估項目」(例如：${pA.name}優勢、${pB.name}優勢、綜合適用場景) 與「詳細說明」。`;
-    const text=await callGemini([{text:prompt}],2000);
-    clearInterval(iv);
-    setTimeout(()=>{
-      status.innerHTML=`<div class="status s-ok"><i class="ti ti-circle-check" style="font-size:15px;flex-shrink:0"></i>比較完成！</div>`;
-      result.innerHTML=`<div class="result-wrap">
+      let prog = 0;
+      status.innerHTML = `<div class="status s-info"><div class="spinner"></div><div style="flex:1">AI 比較中…<div class="prog-wrap"><div class="prog-bar" id="prog2"></div></div></div></div>`;
+      const iv = setInterval(() => { prog = Math.min(prog + 10, 88); const el = document.getElementById('prog2'); if (el) el.style.width = prog + '%'; }, 280);
+
+      const fmt = p => `【${p.name}】（${p.sku || '無料號'}）\n  類型:${p.type || '?'} 底墊:${p.underlay || '?'}${p.underlay_mm || '?'}mm 完成面高:${p.finish_h || '?'}mm\n  尺寸:${p.length || '?'}×${p.width || '?'}×${p.thickness || '?'}mm 耐磨層:${p.wear_layer || '?'}mm\n  AC:${p.ac || '?'} 防焰:${p.fire || '?'} 防滑:${p.slip || '?'} 甲醛:${p.formaldehyde || '?'} 隔音:${p.sound || '?'}\n  版本:${p.version || '?'} 備註:${p.note || '無'}`;
+
+      try {
+        const prompt = `請詳細比較以下兩款資料庫產品，進行全面向的對照分析。\n\n**嚴格限制**：產品名稱必須完全照抄我提供的名稱，絕對禁止自行修改、翻譯或捏造。\n\n產品A資料：\n${fmt(pA)}\n\n產品B資料：\n${fmt(pB)}\n\n請**絕對不要**輸出任何問候語或多餘敘述，直接給出以下兩項內容：\n1. **規格對照表**：Markdown 表格，欄位為「項目」、「${pA.name}」、「${pB.name}」。\n2. **優劣分析與結論**：請再繪製第二個 Markdown 表格，欄位必須是「評估項目」(例如：${pA.name}優勢、${pB.name}優勢、綜合適用場景) 與「詳細說明」。`;
+        const text = await callGemini([{ text: prompt }], 2000);
+        clearInterval(iv);
+        setTimeout(() => {
+          status.innerHTML = `<div class="status s-ok"><i class="ti ti-circle-check" style="font-size:15px;flex-shrink:0"></i>比較完成！</div>`;
+          result.innerHTML = `<div class="result-wrap">
         <div class="result-card"><h3>${pA.name} vs ${pB.name} 比較報告</h3><div class="ai-content">${renderMD(text)}</div></div>
         <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
           <button class="btn btn-ghost btn-sm" onclick="exportToCSV(this)"><i class="ti ti-file-spreadsheet"></i> 下載 Excel (CSV)</button>
@@ -609,122 +1394,122 @@ async function runCompare(){
           <button class="btn btn-ghost btn-sm" onclick="resetSel()" style="margin-left:auto"><i class="ti ti-refresh"></i> 重新選擇</button>
         </div>
       </div>`;
-      btn.disabled=false;
-    },300);
-  }catch(e){clearInterval(iv);status.innerHTML=`<div class="status s-err">${e.message}</div>`;btn.disabled=false;}
-}
+          btn.disabled = false;
+        }, 300);
+      } catch (e) { clearInterval(iv); status.innerHTML = `<div class="status s-err">${e.message}</div>`; btn.disabled = false; }
+    }
 
-function renderMD(text){
-  let html = text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/&lt;br\s*\/?[^&]*&gt;/gi, '<br>')
-    .replace(/\\text\{([^}]+)\}/gi, '$1')
-    .replace(/\\ge/gi, '≥').replace(/\\le/gi, '≤').replace(/\\pm/gi, '±').replace(/\\mu/gi, 'μ')
-    .replace(/\$\s*≥\s*\$/g, '≥').replace(/\$\s*≤\s*\$/g, '≤')
-    .replace(/\$10\^(\d+)\$/g, '10<sup>$1</sup>')
-    .replace(/10\^(\d+)/g, '10<sup>$1</sup>')
-    .replace(/\$([^$\n]+)\$/g, '$1')
-    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/`(.+?)`/g,'<code>$1</code>');
+    function renderMD(text) {
+      let html = text
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/&lt;br\s*\/?[^&]*&gt;/gi, '<br>')
+        .replace(/\\text\{([^}]+)\}/gi, '$1')
+        .replace(/\\ge/gi, '≥').replace(/\\le/gi, '≤').replace(/\\pm/gi, '±').replace(/\\mu/gi, 'μ')
+        .replace(/\$\s*≥\s*\$/g, '≥').replace(/\$\s*≤\s*\$/g, '≤')
+        .replace(/\$10\^(\d+)\$/g, '10<sup>$1</sup>')
+        .replace(/10\^(\d+)/g, '10<sup>$1</sup>')
+        .replace(/\$([^$\n]+)\$/g, '$1')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`(.+?)`/g, '<code>$1</code>');
 
-  html = html.replace(/(?:(?:\|.*\|)\n)+/g, match => {
-    const lines = match.trim().split('\n');
-    if(lines.length < 3) return match;
-    let table = '<div class="table-wrap"><table class="premium-table">';
-    lines.forEach((line, i) => {
-      if(i === 1 && line.includes('---')) return;
-      const cells = line.split('|').map(s=>s.trim()).filter((s, idx, arr) => !(idx===0 && s==='') && !(idx===arr.length-1 && s===''));
-      table += '<tr>';
-      cells.forEach(cell => {
-        let content = cell;
-        if(i > 0) {
-           let m;
-           if ((m = content.match(/^(不建議通過|不建議|強烈不建議|不符合|未達標|劣勢(?:與風險)?|劣勢)[。，、：:\s]*(.*)/))) {
-               content = `<span class="status-badge st-err" style="margin-right:6px"><i class="ti ti-x"></i> ${m[1]}</span>${m[2]}`;
-           } else if ((m = content.match(/^(建議通過|建議|符合|完全符合|通過)[。，、：:\s]*(.*)/))) {
-               content = `<span class="status-badge st-ok" style="margin-right:6px"><i class="ti ti-check"></i> ${m[1]}</span>${m[2]}`;
-           } else if ((m = content.match(/^(極力推薦|推薦|優勢|優點|勝出|優於規範|優)[。，、：:\s]*(.*)/))) {
-               content = `<span class="status-badge st-pro" style="margin-right:6px"><i class="ti ti-star"></i> ${m[1]}</span>${m[2]}`;
-           } else if ((m = content.match(/^(未提及|無資料|無)[。，、：:\s]*(.*)/))) {
-               content = `<span class="status-badge st-warn" style="margin-right:6px">${m[1]}</span>${m[2]}`;
-           }
-        }
-        if(i === 0) table += `<th>${content}</th>`;
-        else table += `<td>${content}</td>`;
+      html = html.replace(/(?:(?:\|.*\|)\n)+/g, match => {
+        const lines = match.trim().split('\n');
+        if (lines.length < 3) return match;
+        let table = '<div class="table-wrap"><table class="premium-table">';
+        lines.forEach((line, i) => {
+          if (i === 1 && line.includes('---')) return;
+          const cells = line.split('|').map(s => s.trim()).filter((s, idx, arr) => !(idx === 0 && s === '') && !(idx === arr.length - 1 && s === ''));
+          table += '<tr>';
+          cells.forEach(cell => {
+            let content = cell;
+            if (i > 0) {
+              let m;
+              if ((m = content.match(/^(不建議通過|不建議|強烈不建議|不符合|未達標|劣勢(?:與風險)?|劣勢)[。，、：:\s]*(.*)/))) {
+                content = `<span class="status-badge st-err" style="margin-right:6px"><i class="ti ti-x"></i> ${m[1]}</span>${m[2]}`;
+              } else if ((m = content.match(/^(建議通過|建議|符合|完全符合|通過)[。，、：:\s]*(.*)/))) {
+                content = `<span class="status-badge st-ok" style="margin-right:6px"><i class="ti ti-check"></i> ${m[1]}</span>${m[2]}`;
+              } else if ((m = content.match(/^(極力推薦|推薦|優勢|優點|勝出|優於規範|優)[。，、：:\s]*(.*)/))) {
+                content = `<span class="status-badge st-pro" style="margin-right:6px"><i class="ti ti-star"></i> ${m[1]}</span>${m[2]}`;
+              } else if ((m = content.match(/^(未提及|無資料|無)[。，、：:\s]*(.*)/))) {
+                content = `<span class="status-badge st-warn" style="margin-right:6px">${m[1]}</span>${m[2]}`;
+              }
+            }
+            if (i === 0) table += `<th>${content}</th>`;
+            else table += `<td>${content}</td>`;
+          });
+          table += '</tr>';
+        });
+        table += '</table></div>';
+        return table;
       });
-      table += '</tr>';
-    });
-    table += '</table></div>';
-    return table;
-  });
 
-  html = html.replace(/\n\n/g,'</p><p style="margin-bottom:.5rem">')
-             .replace(/^[-*] (.+)$/gm,'<li>$1</li>')
-             .replace(/(<li>.*<\/li>\n?)+/gs,m=>'<ul class="pro-list">'+m+'</ul>');
-             
-  return html;
-}
+      html = html.replace(/\n\n/g, '</p><p style="margin-bottom:.5rem">')
+        .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>\n?)+/gs, m => '<ul class="pro-list">' + m + '</ul>');
 
-function renderStats(){
-  const t=db.length,s=new Set(db.map(p=>p.type)).size;
-  const nd=db.filter(p=>p.sound&&p.sound!=='未標示').length;
-  const lv=db.length?db.slice().sort((a,b)=>(b.version||'').localeCompare(a.version||''))[0]?.version||'—':'—';
-  document.getElementById('stats-row').innerHTML=`
+      return html;
+    }
+
+    function renderStats() {
+      const t = db.length, s = new Set(db.map(p => p.type)).size;
+      const nd = db.filter(p => p.sound && p.sound !== '未標示').length;
+      const lv = db.length ? db.slice().sort((a, b) => (b.version || '').localeCompare(a.version || ''))[0]?.version || '—' : '—';
+      document.getElementById('stats-row').innerHTML = `
     <div class="stat-card"><div class="stat-num">${t}</div><div class="stat-lbl">總數</div></div>
     <div class="stat-card"><div class="stat-num">${s}</div><div class="stat-lbl">類型</div></div>
     <div class="stat-card"><div class="stat-num">${nd}</div><div class="stat-lbl">隔音</div></div>
     <div class="stat-card"><div class="stat-num" style="font-size:13px">${lv}</div><div class="stat-lbl">最新</div></div>`;
-}
-function renderDbSelect() {
-  const wrap = document.getElementById('db-select-wrap');
-  if(!wrap) return;
-  if(db.length === 0) {
-    wrap.innerHTML = `<div style="font-size:11px;color:var(--line2);">資料庫目前無產品</div>`;
-    return;
-  }
-  wrap.innerHTML = db.map((p,i) => `
+    }
+    function renderDbSelect() {
+      const wrap = document.getElementById('db-select-wrap');
+      if (!wrap) return;
+      if (db.length === 0) {
+        wrap.innerHTML = `<div style="font-size:11px;color:var(--line2);">資料庫目前無產品</div>`;
+        return;
+      }
+      wrap.innerHTML = db.map((p, i) => `
     <label style="font-size:12px; display:flex; align-items:center; gap:6px; cursor:pointer;">
       <input type="checkbox" class="db-prod-cb" value="${p.id}" checked> ${p.name}
     </label>
   `).join('');
-}
-function renderTable(){
-  renderDbSelect();
-  const q=(document.getElementById('db-search')?.value||'').toLowerCase();
-  const f=db.filter(p=>(p.sku||'').toLowerCase().includes(q)||(p.name||'').toLowerCase().includes(q)||(p.type||'').toLowerCase().includes(q));
-  if(!f.length){document.getElementById('table-wrap').innerHTML=`<div class="empty"><div class="empty-icon"><i class="ti ti-${db.length?'search':'inbox'}"></i></div>${db.length?'找不到符合的產品':'尚無產品，點「範例」快速載入'}</div>`;return;}
-  document.getElementById('table-wrap').innerHTML=`
+    }
+    function renderTable() {
+      renderDbSelect();
+      const q = (document.getElementById('db-search')?.value || '').toLowerCase();
+      const f = db.filter(p => (p.sku || '').toLowerCase().includes(q) || (p.name || '').toLowerCase().includes(q) || (p.type || '').toLowerCase().includes(q));
+      if (!f.length) { document.getElementById('table-wrap').innerHTML = `<div class="empty"><div class="empty-icon"><i class="ti ti-${db.length ? 'search' : 'inbox'}"></i></div>${db.length ? '找不到符合的產品' : '尚無產品，點「範例」快速載入'}</div>`; return; }
+      document.getElementById('table-wrap').innerHTML = `
     <table class="db-table">
       <thead><tr><th>料號</th><th>名稱</th><th>類型</th><th>底墊</th><th>AC</th><th>隔音</th><th>版本</th><th></th></tr></thead>
-      <tbody>${f.map(p=>`<tr>
-        <td style="font-family:var(--mono);font-size:11px">${p.sku||'—'}</td>
-        <td><div style="font-weight:500">${p.name}</div><div style="font-size:10px;color:var(--line2)">${p.note||''}</div></td>
-        <td><span class="tag tag-t">${p.type||'—'}</span></td>
-        <td style="font-size:11px">${p.underlay||'—'} ${p.underlay_mm?p.underlay_mm+'mm':''}</td>
-        <td><span class="tag tag-a">${p.ac||'—'}</span></td>
-        <td><span class="tag ${p.sound&&p.sound!=='未標示'?'tag-p':'tag-g'}">${p.sound||'—'}</span></td>
-        <td style="font-size:11px;font-family:var(--mono)">${p.version||'—'}</td>
+      <tbody>${f.map(p => `<tr>
+        <td style="font-family:var(--mono);font-size:11px">${p.sku || '—'}</td>
+        <td><div style="font-weight:500">${p.name}</div><div style="font-size:10px;color:var(--line2)">${p.note || ''}</div></td>
+        <td><span class="tag tag-t">${p.type || '—'}</span></td>
+        <td style="font-size:11px">${p.underlay || '—'} ${p.underlay_mm ? p.underlay_mm + 'mm' : ''}</td>
+        <td><span class="tag tag-a">${p.ac || '—'}</span></td>
+        <td><span class="tag ${p.sound && p.sound !== '未標示' ? 'tag-p' : 'tag-g'}">${p.sound || '—'}</span></td>
+        <td style="font-size:11px;font-family:var(--mono)">${p.version || '—'}</td>
         <td><div class="act-btns">
           <button class="btn btn-ghost btn-sm" onclick="openForm('${p.id}')"><i class="ti ti-edit"></i></button>
           <button class="btn btn-danger btn-sm" onclick="delProd('${p.id}')"><i class="ti ti-trash"></i></button>
         </div></td>
       </tr>`).join('')}</tbody>
     </table>
-    <div style="font-size:10px;color:var(--line2);font-family:var(--mono);text-align:right;margin-top:5px">${f.length}筆${f.length<db.length?` / 共${db.length}筆`:''}</div>`;
-}
-function openForm(id){
-  editId=id||null;const p=id?db.find(x=>x.id===id):{};const v=(k,d='')=>p?.[k]??d;
-  document.getElementById('form-area').innerHTML=`
+    <div style="font-size:10px;color:var(--line2);font-family:var(--mono);text-align:right;margin-top:5px">${f.length}筆${f.length < db.length ? ` / 共${db.length}筆` : ''}</div>`;
+    }
+    function openForm(id) {
+      editId = id || null; const p = id ? db.find(x => x.id === id) : {}; const v = (k, d = '') => p?.[k] ?? d;
+      document.getElementById('form-area').innerHTML = `
     <div class="form-wrap">
-      <div class="form-hd"><span><i class="ti ti-${id?'edit':'plus'}" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>${id?'編輯產品':'新增產品'}</span><button class="btn btn-ghost btn-sm" onclick="closeForm()"><i class="ti ti-x"></i></button></div>
+      <div class="form-hd"><span><i class="ti ti-${id ? 'edit' : 'plus'}" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>${id ? '編輯產品' : '新增產品'}</span><button class="btn btn-ghost btn-sm" onclick="closeForm()"><i class="ti ti-x"></i></button></div>
       <div class="fg2">
         <div class="fsec">基本資料</div>
         <div class="fg"><label>料號</label><input id="f-sku" value="${v('sku')}" placeholder="FLR-001"></div>
         <div class="fg"><label>產品名稱 *</label><input id="f-name" value="${v('name')}" placeholder="美綻 Advanced"></div>
-        <div class="fg"><label>地板類型</label><select id="f-type">${['超耐磨','SPC','實木','竹木','磁磚','地毯','其他'].map(t=>`<option ${v('type')===t?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="fg"><label>地板類型</label><select id="f-type">${['超耐磨', 'SPC', '實木', '竹木', '磁磚', '地毯', '其他'].map(t => `<option ${v('type') === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
         <div class="fg"><label>底墊類型</label><input id="f-underlay" value="${v('underlay')}" placeholder="鋁箔發泡布"></div>
       </div>
       <div class="fg3">
@@ -738,7 +1523,7 @@ function openForm(id){
       </div>
       <div class="fg2">
         <div class="fsec">性能規格</div>
-        <div class="fg"><label>磨耗等級</label><select id="f-ac"><option value="">—</option>${['AC3','AC4','AC5'].map(t=>`<option ${v('ac')===t?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div class="fg"><label>磨耗等級</label><select id="f-ac"><option value="">—</option>${['AC3', 'AC4', 'AC5'].map(t => `<option ${v('ac') === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
         <div class="fg"><label>防焰</label><input id="f-fire" value="${v('fire')}" placeholder="CNS 7614 1級"></div>
         <div class="fg"><label>防滑</label><input id="f-slip" value="${v('slip')}" placeholder="COF>0.55"></div>
         <div class="fg"><label>甲醛</label><input id="f-form" value="${v('formaldehyde')}" placeholder="E1 <0.05ppm"></div>
@@ -749,85 +1534,86 @@ function openForm(id){
       </div>
       <div class="form-act">
         <button class="btn btn-ghost" onclick="closeForm()">取消</button>
-        <button class="btn btn-teal" onclick="saveProd()"><i class="ti ti-device-floppy" style="font-size:13px"></i>${id?'儲存變更':'加入資料庫'}</button>
+        <button class="btn btn-teal" onclick="saveProd()"><i class="ti ti-device-floppy" style="font-size:13px"></i>${id ? '儲存變更' : '加入資料庫'}</button>
       </div>
     </div>`;
-  document.getElementById('form-area').scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-function closeForm(){document.getElementById('form-area').innerHTML='';editId=null;}
-function saveProd(){
-  const name=document.getElementById('f-name').value.trim();
-  if(!name){alert('請填寫產品名稱');return;}
-  const p={id:editId||uid(),sku:document.getElementById('f-sku').value.trim(),name,type:document.getElementById('f-type').value,underlay:document.getElementById('f-underlay').value.trim(),underlay_mm:parseFloat(document.getElementById('f-umm').value)||null,length:parseInt(document.getElementById('f-len').value)||null,width:parseInt(document.getElementById('f-wid').value)||null,thickness:parseFloat(document.getElementById('f-thk').value)||null,wear_layer:parseFloat(document.getElementById('f-wear').value)||null,finish_h:parseFloat(document.getElementById('f-fh').value)||null,ac:document.getElementById('f-ac').value,fire:document.getElementById('f-fire').value.trim(),slip:document.getElementById('f-slip').value.trim(),formaldehyde:document.getElementById('f-form').value.trim(),sound:document.getElementById('f-sound').value.trim(),version:document.getElementById('f-ver').value.trim(),certs:document.getElementById('f-certs').value.trim(),note:document.getElementById('f-note').value.trim(),updatedAt:new Date().toLocaleDateString('zh-TW')};
-  if(editId){const i=db.findIndex(x=>x.id===editId);if(i>=0)db[i]=p;}else db.unshift(p);
-  save();closeForm();renderStats();renderTable();updateDbSub();refreshUploadPreview();
-}
-function delProd(id){
-  const p=db.find(x=>x.id===id);
-  if(!p||!confirm('確定刪除「'+p.name+'」？'))return;
-  db=db.filter(x=>x.id!==id);save();renderStats();renderTable();updateDbSub();refreshUploadPreview();
-}
-
-// ── Export ──
-function exportToCSV(btn) {
-  const wrap = btn.closest('.result-wrap');
-  const tables = wrap.querySelectorAll('table');
-  if(!tables.length) { alert('找不到表格資料'); return; }
-  
-  let csv = [];
-  tables.forEach(table => {
-    const rows = table.querySelectorAll('tr');
-    for (let i = 0; i < rows.length; i++) {
-      let row = [], cols = rows[i].querySelectorAll('td, th');
-      for (let j = 0; j < cols.length; j++) {
-        let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, ' ').replace(/"/g, '""');
-        row.push('"' + data + '"');
-      }
-      csv.push(row.join(','));
+      document.getElementById('form-area').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-    csv.push('');
-  });
-  
-  const csvContent = "\uFEFF" + csv.join("\n");
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'AI分析報告_' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click();
-}
+    function closeForm() { document.getElementById('form-area').innerHTML = ''; editId = null; }
+    function saveProd() {
+      const name = document.getElementById('f-name').value.trim();
+      if (!name) { alert('請填寫產品名稱'); return; }
+      const p = { id: editId || uid(), sku: document.getElementById('f-sku').value.trim(), name, type: document.getElementById('f-type').value, underlay: document.getElementById('f-underlay').value.trim(), underlay_mm: parseFloat(document.getElementById('f-umm').value) || null, length: parseInt(document.getElementById('f-len').value) || null, width: parseInt(document.getElementById('f-wid').value) || null, thickness: parseFloat(document.getElementById('f-thk').value) || null, wear_layer: parseFloat(document.getElementById('f-wear').value) || null, finish_h: parseFloat(document.getElementById('f-fh').value) || null, ac: document.getElementById('f-ac').value, fire: document.getElementById('f-fire').value.trim(), slip: document.getElementById('f-slip').value.trim(), formaldehyde: document.getElementById('f-form').value.trim(), sound: document.getElementById('f-sound').value.trim(), version: document.getElementById('f-ver').value.trim(), certs: document.getElementById('f-certs').value.trim(), note: document.getElementById('f-note').value.trim(), updatedAt: new Date().toLocaleDateString('zh-TW') };
+      if (editId) { const i = db.findIndex(x => x.id === editId); if (i >= 0) db[i] = p; } else db.unshift(p);
+      save(); closeForm(); renderStats(); renderTable(); updateDbSub(); refreshUploadPreview();
+    }
+    function delProd(id) {
+      const p = db.find(x => x.id === id);
+      if (!p || !confirm('確定刪除「' + p.name + '」？')) return;
+      db = db.filter(x => x.id !== id); save(); renderStats(); renderTable(); updateDbSub(); refreshUploadPreview();
+    }
 
-function exportToPDF(btn) {
-  const wrap = btn.closest('.result-wrap');
-  const content = wrap.querySelector('.ai-content').innerHTML;
-  const win = window.open('', '', 'height=800,width=900');
-  win.document.write('<html><head><title>AI 分析報告</title>');
-  win.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">');
-  win.document.write('<style>body{font-family:"Noto Serif TC",sans-serif; padding:30px; line-height:1.6; color:#1a1814} .table-wrap{width:100%;margin:1.5rem 0;border:1px solid #d4d0c8;border-radius:10px;overflow:hidden;} .premium-table{width:100%;border-collapse:collapse;text-align:left;font-size:13px;} .premium-table th{background:#1a1814;color:white;padding:12px 16px;font-weight:bold;} .premium-table td{padding:12px 16px;border-bottom:1px solid #d4d0c8;} .status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:bold;white-space:nowrap;} .st-ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;} .st-pro{background:#f3e8ff;color:#6b21a8;border:1px solid #e9d5ff;} .st-err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;} .st-warn{background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;} .pro-list{list-style:none;padding:0;} .pro-list li{padding:12px;border-left:4px solid #1a6b52;background:#f5f3ee;margin-bottom:8px;display:flex;align-items:flex-start;gap:8px;} .pro-list li::before{content:"\\eb56";font-family:"tabler-icons";color:#1a6b52;font-size:16px;} h1,h2,h3{font-size:16px;margin-top:1.5rem}</style>');
-  win.document.write('</head><body>');
-  win.document.write('<h2>AI 地板規範比對分析報告</h2>');
-  win.document.write(content);
-  win.document.write('</body></html>');
-  win.document.close();
-  win.focus();
-  setTimeout(() => { win.print(); }, 1200);
-}
+    // ── Export ──
+    function exportToCSV(btn) {
+      const wrap = btn.closest('.result-wrap');
+      const tables = wrap.querySelectorAll('table');
+      if (!tables.length) { alert('找不到表格資料'); return; }
 
-// ── Init ──
-load();
-try{
-  const m=localStorage.getItem('floor_gemini_model');if(m)currentModel=m;
-  const k=localStorage.getItem('floor_gemini_key');
-  if(k){
-    apiKey=k;
-    const inputEl = document.getElementById('api-key-input');
-    if(inputEl) inputEl.value=k;
-    setKeyStatus('✓ 已載入儲存的金鑰','ok');
-    const cardEl = document.getElementById('setup-card');
-    if(cardEl) cardEl.classList.add('ok');
-  }
-}catch(e){}
-renderStats();renderTable();updateDbSub();refreshUploadPreview();toggleCmpMode();
-</script>
+      let csv = [];
+      tables.forEach(table => {
+        const rows = table.querySelectorAll('tr');
+        for (let i = 0; i < rows.length; i++) {
+          let row = [], cols = rows[i].querySelectorAll('td, th');
+          for (let j = 0; j < cols.length; j++) {
+            let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, ' ').replace(/"/g, '""');
+            row.push('"' + data + '"');
+          }
+          csv.push(row.join(','));
+        }
+        csv.push('');
+      });
+
+      const csvContent = "\uFEFF" + csv.join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'AI分析報告_' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+    }
+
+    function exportToPDF(btn) {
+      const wrap = btn.closest('.result-wrap');
+      const content = wrap.querySelector('.ai-content').innerHTML;
+      const win = window.open('', '', 'height=800,width=900');
+      win.document.write('<html><head><title>AI 分析報告</title>');
+      win.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">');
+      win.document.write('<style>body{font-family:"Noto Serif TC",sans-serif; padding:30px; line-height:1.6; color:#1a1814} .table-wrap{width:100%;margin:1.5rem 0;border:1px solid #d4d0c8;border-radius:10px;overflow:hidden;} .premium-table{width:100%;border-collapse:collapse;text-align:left;font-size:13px;} .premium-table th{background:#1a1814;color:white;padding:12px 16px;font-weight:bold;} .premium-table td{padding:12px 16px;border-bottom:1px solid #d4d0c8;} .status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:bold;white-space:nowrap;} .st-ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;} .st-pro{background:#f3e8ff;color:#6b21a8;border:1px solid #e9d5ff;} .st-err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;} .st-warn{background:#ffedd5;color:#9a3412;border:1px solid #fed7aa;} .pro-list{list-style:none;padding:0;} .pro-list li{padding:12px;border-left:4px solid #1a6b52;background:#f5f3ee;margin-bottom:8px;display:flex;align-items:flex-start;gap:8px;} .pro-list li::before{content:"\\eb56";font-family:"tabler-icons";color:#1a6b52;font-size:16px;} h1,h2,h3{font-size:16px;margin-top:1.5rem}</style>');
+      win.document.write('</head><body>');
+      win.document.write('<h2>AI 地板規範比對分析報告</h2>');
+      win.document.write(content);
+      win.document.write('</body></html>');
+      win.document.close();
+      win.focus();
+      setTimeout(() => { win.print(); }, 1200);
+    }
+
+    // ── Init ──
+    load();
+    try {
+      const m = localStorage.getItem('floor_gemini_model'); if (m) currentModel = m;
+      const k = localStorage.getItem('floor_gemini_key');
+      if (k) {
+        apiKey = k;
+        const inputEl = document.getElementById('api-key-input');
+        if (inputEl) inputEl.value = k;
+        setKeyStatus('✓ 已載入儲存的金鑰', 'ok');
+        const cardEl = document.getElementById('setup-card');
+        if (cardEl) cardEl.classList.add('ok');
+      }
+    } catch (e) { }
+    renderStats(); renderTable(); updateDbSub(); refreshUploadPreview(); toggleCmpMode();
+  </script>
 </body>
+
 </html>
