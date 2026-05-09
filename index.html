@@ -248,65 +248,12 @@ const STORE='floordb_gemini';
 let db=[], editId=null, selA=null, selB=null;
 let uploadFile1=null, uploadB641=null, uploadMime1=null;
 let uploadFile2=null, uploadB642=null, uploadMime2=null;
-let apiKey='';
+let apiKey='AIzaSyB9DVinIFRhkd-v9O1nYNG3aK9FydTFW3E';
 let currentModel='gemini-2.0-flash';
 
 const GEMINI_URL = (key, model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
-function changeModel(){
-  currentModel = document.getElementById('model-select').value;
-  try{localStorage.setItem('floor_gemini_model',currentModel);}catch(e){}
-}
 
-async function fetchModels(k) {
-  try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);
-    const d = await r.json();
-    if(d.models) {
-      const validModels = d.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent') && m.name.includes('gemini'));
-      if(validModels.length===0) return;
-      const sel = document.getElementById('model-select');
-      sel.innerHTML = validModels.map(m => {
-        const val = m.name.split('/')[1];
-        return `<option value="${val}" ${val===currentModel?'selected':''}>${m.displayName||val} (${val})</option>`;
-      }).join('');
-      document.getElementById('model-select-row').style.display = 'block';
-    }
-  } catch(e) { console.error('Fetch models err', e); }
-}
-
-function saveKey(){
-  const k=document.getElementById('api-key-input').value.trim();
-  if(!k){setKeyStatus('請輸入金鑰','err');return;}
-  if(!k.startsWith('AIza')){setKeyStatus('格式不對，Gemini 金鑰以 AIza 開頭','err');return;}
-  apiKey=k;
-  try{localStorage.setItem('floor_gemini_key',k);}catch(e){}
-  setKeyStatus('✓ 金鑰已儲存','ok');
-  document.getElementById('setup-card').classList.add('ok');
-  updateSendBtn(); updateCmpBtn();
-}
-function setKeyStatus(msg,type){
-  const el=document.getElementById('key-status');
-  el.textContent=msg; el.className='key-status '+(type==='ok'?'key-ok':'key-err');
-}
-async function testKey(){
-  const k=document.getElementById('api-key-input').value.trim()||apiKey;
-  if(!k){setKeyStatus('請先輸入金鑰','err');return;}
-  setKeyStatus('測試中…','');
-  try{
-    await fetchModels(k);
-    const r=await fetch(GEMINI_URL(k, currentModel),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'回覆OK兩字'}]}]})});
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message);
-    apiKey=k;
-    try{localStorage.setItem('floor_gemini_key',k);}catch(e){}
-    setKeyStatus('✓ 連線成功！AI 功能可正常使用','ok');
-    document.getElementById('setup-card').classList.add('ok');
-    updateSendBtn(); updateCmpBtn();
-  }catch(e){
-    setKeyStatus('✗ '+e.message,'err');
-  }
-}
 
 async function callGemini(parts, maxTokens=3000){
   if(!apiKey) throw new Error('請先設定 Gemini API 金鑰');
@@ -827,14 +774,6 @@ function exportToPDF(btn) {
 load();
 try{
   const m=localStorage.getItem('floor_gemini_model');if(m)currentModel=m;
-  const k=localStorage.getItem('floor_gemini_key');
-  if(k){
-    apiKey=k;
-    document.getElementById('api-key-input').value=k;
-    setKeyStatus('✓ 已載入儲存的金鑰','ok');
-    document.getElementById('setup-card').classList.add('ok');
-    fetchModels(k);
-  }
 }catch(e){}
 renderStats();renderTable();updateDbSub();refreshUploadPreview();toggleCmpMode();
 </script>
