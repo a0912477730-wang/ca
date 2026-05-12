@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEMi 太格｜地板規範分析系統 · 工具介紹</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    :root {
+      --bg-base:      #F9F8F6;
+      --bg-card:      #FFFFFF;
+      --text-main:    #2D2B2A;
+      --text-muted:   #8A857D;
+      --border-light: #EBE8E3;
+      --border-med:   #D9D4CC;
+      --primary:      #9C7E5E;
+      --primary-h:    #866A4D;
+      --primary-l:    #F4F1ED;
+      --rust:         #9E5B5B;
+      --rust-l:       #F7EFEF;
+      --sand:         #C9A67D;
+      --sand-l:       #FDF9F3;
+      --sage:         #6B7A6A;
+      --sage-l:       #F0F3EF;
+      --serif: 'Noto Serif TC', serif;
+      --sans:  'Noto Sans TC', sans-serif;
+      --mono:  'DM Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(249,248,246,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-light);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 3rem;
+    }
+    .logo { font-family: var(--serif); font-size: 1.4rem; font-weight: 600; }
+    .logo span { color: var(--primary); font-style: italic; font-weight: 400; }
+    .nav-right { display: flex; align-items: center; gap: 2rem; }
+    .nav-progress {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .np { width: 7px; height: 7px; border-radius: 50%; background: var(--border-med); transition: all 0.3s; cursor: pointer; }
+    .np.on { background: var(--primary); transform: scale(1.3); }
+    .nav-hint { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.5px; }
+
+    /* ── SLIDE ENGINE ── */
+    .slides-wrap { overflow: hidden; }
+    .slide {
+      display: none;
+      min-height: 100vh;
+      padding: 7rem 3rem 4rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .slide.show {
+      display: flex;
+      animation: slideEnter 0.6s ease forwards;
+    }
+    @keyframes slideEnter {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ── TYPOGRAPHY ── */
+    .sec-tag {
+      font-family: var(--mono); font-size: 0.78rem; color: var(--sand);
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .sec-tag::before { content: ''; width: 20px; height: 1px; background: var(--sand); }
+
+    h1 {
+      font-family: var(--serif); font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 500; line-height: 1.1; margin-bottom: 1.5rem;
+    }
+    h2 {
+      font-family: var(--serif); font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 500; line-height: 1.2; margin-bottom: 1rem;
+    }
+    p.lead {
+      font-size: 1.15rem; color: var(--text-muted);
+      max-width: 620px; margin-bottom: 2rem;
+      font-weight: 300; line-height: 1.85;
+    }
+
+    /* ── CARDS ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      padding: 2rem; border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(45,43,42,0.03);
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 8px 32px rgba(156,126,94,0.1);
+    }
+    .card-icon { font-size: 2rem; color: var(--primary); margin-bottom: 1rem; }
+    .card h3 { font-family: var(--serif); font-size: 1.15rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .card p { color: var(--text-muted); font-size: 0.93rem; line-height: 1.75; }
+
+    /* ── STEP FLOW (horizontal) ── */
+    .step-flow {
+      display: grid; grid-template-columns: repeat(5,1fr);
+      gap: 0; position: relative; margin-top: 2.5rem;
+    }
+    .step-flow::before {
+      content: '';
+      position: absolute; top: 26px; left: 10%; right: 10%; height: 2px;
+      background: linear-gradient(90deg, var(--sand), var(--sage));
+      z-index: 0;
+    }
+    .step-col {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; padding: 0 0.75rem; position: relative; z-index: 1;
+      cursor: pointer;
+    }
+    .step-circle {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--bg-card); border: 2px solid var(--border-med);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif); font-size: 1.2rem; font-weight: 500; color: var(--text-muted);
+      margin-bottom: 1rem; transition: all 0.3s;
+      box-shadow: 0 0 0 5px var(--bg-base);
+    }
+    .step-col.active .step-circle,
+    .step-col:hover .step-circle {
+      background: var(--primary); border-color: var(--primary);
+      color: #fff; transform: scale(1.1);
+      box-shadow: 0 4px 16px rgba(156,126,94,0.3), 0 0 0 5px var(--bg-base);
+    }
+    .step-col.done .step-circle {
+      background: var(--sage-l); border-color: var(--sage); color: var(--sage);
+      box-shadow: 0 0 0 5px var(--bg-base);
+    }
+    .step-name {
+      font-size: 0.82rem; font-weight: 500; margin-bottom: 0.3rem; color: var(--text-muted);
+      transition: color 0.3s;
+    }
+    .step-col.active .step-name { color: var(--primary); font-weight: 600; }
+    .step-col.done .step-name { color: var(--sage); }
+    .step-hint { font-size: 0.75rem; color: var(--text-muted); font-weight: 300; line-height: 1.5; }
+
+    /* Step detail card */
+    .step-detail-wrap { margin-top: 2.5rem; }
+    .step-detail {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: 14px; padding: 2rem 2.25rem;
+      box-shadow: 0 4px 24px rgba(45,43,42,0.05);
+      display: none;
+    }
+    .step-detail.active { display: block; animation: fadeUp 0.5s ease forwards; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+    .sd-label {
+      font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--sand); margin-bottom: 0.5rem;
+    }
+    .sd-title {
+      font-family: var(--serif); font-size: 1.4rem; font-weight: 500; margin-bottom: 0.6rem;
+    }
+    .sd-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.25rem; }
+    .sd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+    .sd-mock {
+      background: var(--bg-base); border: 1px solid var(--border-light);
+      border-radius: 8px; overflow: hidden;
+    }
+    .sd-mock-bar {
+      display: flex; gap: 6px; align-items: center;
+      padding: 0.5rem 0.8rem;
+      background: var(--primary-l); border-bottom: 1px solid var(--border-light);
+    }
+    .smd { width: 9px; height: 9px; border-radius: 50%; }
+    .sd-mock-body {
+      padding: 0.9rem 1rem;
+      font-family: var(--mono); font-size: 0.75rem; line-height: 1.9;
+    }
+    .mk { color: var(--sage); }
+    .mv { color: var(--primary); }
+    .mo { color: var(--text-muted); }
+    .mok { color: var(--sage); font-weight: 500; }
+    .mwarn { color: var(--rust); font-weight: 500; }
+    .sd-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .sd-tag {
+      font-family: var(--mono); font-size: 0.68rem;
+      padding: 0.2rem 0.65rem; border-radius: 4px;
+      background: var(--primary-l); color: var(--primary);
+      border: 1px solid #E0D4C4;
+    }
+
+    /* ── DEMO BOX ── */
+    .demo-box {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+      margin-top: 2rem;
+    }
+    .demo-header {
+      background: var(--primary-l); padding: 11px 18px;
+      display: flex; gap: 7px; align-items: center;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .demo-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .demo-filename { margin-left: 8px; font-family: var(--mono); font-size: 0.72rem; color: var(--text-muted); }
+    .demo-body { padding: 2.5rem; text-align: center; }
+    .demo-dropzone {
+      border: 2px dashed var(--primary); border-radius: 12px; padding: 3rem;
+      background: var(--primary-l); cursor: pointer; transition: 0.3s;
+    }
+    .demo-dropzone:hover { background: #EBE4DB; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      background: var(--primary); color: #fff; border: none;
+      padding: 0.8rem 1.75rem; font-size: 1rem; border-radius: 8px;
+      cursor: pointer; font-family: var(--sans); font-weight: 500;
+      transition: all 0.2s; text-decoration: none; display: inline-block;
+    }
+    .btn:hover { background: var(--primary-h); transform: translateY(-1px); }
+    .btn-sm {
+      padding: 0.55rem 1.25rem; font-size: 0.88rem;
+    }
+    .btn-outline {
+      background: transparent; color: var(--primary);
+      border: 1.5px solid var(--primary);
+      padding: 0.75rem 1.5rem; font-size: 0.95rem; border-radius: 8px;
+      cursor: pointer; font-family: var(--sans); font-weight: 500;
+      transition: all 0.2s; text-decoration: none; display: inline-block;
+    }
+    .btn-outline:hover { background: var(--primary-l); }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 0.15rem 0.6rem; border-radius: 4px;
+      font-family: var(--mono); font-size: 0.68rem;
+    }
+    .b-pass { background: var(--sage-l); color: var(--sage); border: 1px solid #C4D4C3; }
+    .b-warn { background: var(--sand-l); color: #996633; border: 1px solid #E8C99A; }
+    .b-fail { background: var(--rust-l); color: var(--rust); border: 1px solid #DDB8B8; }
+
+    /* ── COMPARISON TABLE ── */
+    .cmp-table {
+      width: 100%; border-collapse: collapse; font-size: 0.88rem;
+      border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border-light);
+    }
+    .cmp-table thead th {
+      padding: 0.9rem 1.25rem; text-align: left;
+      font-family: var(--serif); font-weight: 500;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .cmp-table thead th:first-child {
+      font-family: var(--mono); font-size: 0.68rem;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--text-muted); font-weight: 400; width: 160px;
+    }
+    .th-a { background: var(--primary-l); }
+    .th-b { background: var(--sage-l); }
+    .cmp-table tbody tr { border-bottom: 1px solid var(--border-light); transition: background 0.15s; }
+    .cmp-table tbody tr:last-child { border-bottom: none; }
+    .cmp-table tbody tr:hover td { background: #FAFAF8 !important; }
+    .cmp-table td { padding: 0.85rem 1.25rem; vertical-align: top; line-height: 1.6; }
+    .cmp-table td:first-child { color: var(--text-muted); font-size: 0.8rem; font-weight: 300; }
+    .td-a { background: rgba(244,241,237,0.25); }
+    .td-b { background: rgba(240,243,239,0.25); }
+    .highlight-row td { background: var(--sand-l) !important; }
+    .win { color: var(--sage); font-weight: 500; }
+    .dim { color: var(--border-med); text-decoration: line-through; font-size: 0.82rem; }
+
+    /* ── ROI PANEL ── */
+    .roi-panel {
+      background: var(--bg-card); border: 1px solid var(--border-light);
+      border-radius: 16px; padding: 2.5rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
+      box-shadow: 0 4px 24px rgba(45,43,42,0.04);
+    }
+    .slider-wrap label {
+      display: flex; justify-content: space-between;
+      font-weight: 500; margin-bottom: 0.9rem; font-size: 1rem;
+    }
+    input[type=range] {
+      width: 100%; -webkit-appearance: none;
+      background: var(--border-light); height: 6px; border-radius: 3px; outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--primary); cursor: pointer;
+      box-shadow: 0 2px 6px rgba(156,126,94,0.35);
+    }
+    .roi-result {
+      text-align: center; background: var(--primary-l);
+      padding: 2.25rem; border-radius: 12px; border: 1px solid #E0D4C4;
+    }
+    .roi-big { font-family: var(--serif); font-size: 4rem; color: var(--primary); line-height: 1; margin: 0.4rem 0; }
+
+    /* ── FADE ── */
+    .fi { opacity: 0; transform: translateY(22px); transition: 0.7s ease-out; }
+    .fi.vis { opacity: 1; transform: none; }
+    .fi.d1 { transition-delay: 0.1s; }
+    .fi.d2 { transition-delay: 0.2s; }
+    .fi.d3 { transition-delay: 0.3s; }
+    .fi.d4 { transition-delay: 0.4s; }
+
+    /* ── PC LIST ── */
+    .pc-list { list-style: none; }
+    .pc-list li { display: flex; gap: 10px; margin-bottom: 1.1rem; font-size: 0.95rem; line-height: 1.7; align-items: flex-start; }
+    .pc-list i { font-size: 1.1rem; margin-top: 3px; flex-shrink: 0; }
+    .pro i { color: var(--sage); }
+    .con i { color: var(--rust); }
+    .con-solve { display: block; margin-top: 0.3rem; font-size: 0.84rem; color: var(--primary); font-weight: 500; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 860px) {
+      .slide { padding: 6rem 1.5rem 3rem; }
+      nav { padding: 1rem 1.5rem; }
+      h1 { font-size: 2.4rem; }
+      h2 { font-size: 1.9rem; }
+      .grid-2, .grid-3, .sd-grid, .roi-panel { grid-template-columns: 1fr; }
+      .step-flow { grid-template-columns: 1fr; }
+      .step-flow::before { display: none; }
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="logo">SEMi <span>太格</span></div>
+  <div class="nav-right">
+    <div class="nav-progress" id="nav-dots"></div>
+    <span class="nav-hint" id="slide-counter">1 / 6</span>
+  </div>
+</nav>
+
+
+<!-- ══════════════════
+  SLIDE 1 · COVER
+══════════════════ -->
+<div class="slide show" id="s1">
+  <div class="fi vis">
+    <div class="sec-tag">Tool Introduction · 2026</div>
+    <h1>地板規範<br><span style="color:var(--primary);font-style:italic;">AI 分析系統</span></h1>
+    <p class="lead">一份零安裝的 HTML 工具，把耗時 45 分鐘的人工規範比對，壓縮至 2 分鐘。這份介紹帶您快速了解它能做什麼、怎麼用、以及為什麼值得導入。</p>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:3rem;">
+      <button class="btn" onclick="goSlide(2)">開始介紹 →</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;padding-top:2rem;border-top:1px solid var(--border-light);max-width:680px;">
+      <div>
+        <div style="font-family:var(--serif);font-size:2.2rem;font-weight:500;color:var(--primary);line-height:1;">−95%</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);font-weight:300;margin-top:0.25rem;">分析時間縮短</div>
+      </div>
+      <div>
+        <div style="font-family:var(--serif);font-size:2.2rem;font-weight:500;color:var(--primary);line-height:1;">20×</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);font-weight:300;margin-top:0.25rem;">效率提升</div>
+      </div>
+      <div>
+        <div style="font-family:var(--serif);font-size:2.2rem;font-weight:500;color:var(--primary);line-height:1;">NT$0</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);font-weight:300;margin-top:0.25rem;">軟體授權費</div>
+      </div>
+      <div>
+        <div style="font-family:var(--serif);font-size:2.2rem;font-weight:500;color:var(--primary);line-height:1;">6月</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);font-weight:300;margin-top:0.25rem;">回本週期</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════
+  SLIDE 2 · PROBLEM
+══════════════════ -->
+<div class="slide" id="s2">
+  <div class="fi">
+    <div class="sec-tag">The Problem</div>
+    <h2>現在的工作方式，悄悄吃掉了多少時間？</h2>
+    <p class="lead">業務或工程師每次比對客戶規範，都要手動逐欄核對 PDF，跨語言、跨版本，稍有疏漏就可能選錯產品。</p>
+  </div>
+  <div class="grid-3" style="margin-top:0.5rem;">
+    <div class="card fi d1">
+      <i class="ti ti-clock card-icon" style="color:var(--rust);"></i>
+      <h3>每次 30–60 分鐘</h3>
+      <p>一份規範文件，從打開到完成比對，平均耗費半小時以上。每月案件 30 件，就是 22 小時消失在這裡。</p>
+    </div>
+    <div class="card fi d2">
+      <i class="ti ti-alert-triangle card-icon" style="color:var(--sand);"></i>
+      <h3>漏看的風險</h3>
+      <p>人工核對難以確保零遺漏，跨國標準（CNS、DIN、SEMI）術語不同，一不小心就比錯、選錯規格。</p>
+    </div>
+    <div class="card fi d3">
+      <i class="ti ti-files card-icon" style="color:var(--sage);"></i>
+      <h3>資料四散各處</h3>
+      <p>規範 PDF、掃描圖、截圖各自為政，沒有統一查找入口，換人接手就要重頭理解一遍。</p>
+    </div>
+  </div>
+  <div style="margin-top:2.5rem;padding:1.5rem 2rem;background:var(--sand-l);border-radius:12px;border:1px solid #E8D4B4;max-width:680px;" class="fi d4">
+    <p style="font-size:0.95rem;color:var(--text-muted);line-height:1.8;"><strong style="color:var(--text-main);">一句話說清楚問題：</strong>這份工作本來不應該這麼花時間——它只是查對數字，而 AI 做這件事比人快 20 倍，且幾乎不會出錯。</p>
+  </div>
+</div>
+
+
+<!-- ══════════════════
+  SLIDE 3 · HOW IT WORKS (interactive steps)
+══════════════════ -->
+<div class="slide" id="s3">
+  <div class="fi">
+    <div class="sec-tag">How It Works</div>
+    <h2>五個步驟，<br>完成全套分析</h2>
+    <p class="lead">點擊步驟查看詳細說明與操作畫面預覽。</p>
+  </div>
+
+  <div class="step-flow fi" id="step-flow">
+    <div class="step-col active" onclick="showStep(0)" data-step="0">
+      <div class="step-circle">1</div>
+      <div class="step-name">設定金鑰</div>
+      <div class="step-hint">30 秒完成<br>本機加密</div>
+    </div>
+    <div class="step-col" onclick="showStep(1)" data-step="1">
+      <div class="step-circle">2</div>
+      <div class="step-name">建立產品庫</div>
+      <div class="step-hint">CSV 匯入<br>版本追蹤</div>
+    </div>
+    <div class="step-col" onclick="showStep(2)" data-step="2">
+      <div class="step-circle">3</div>
+      <div class="step-name">上傳規範</div>
+      <div class="step-hint">PDF / 圖片<br>自動萃取</div>
+    </div>
+    <div class="step-col" onclick="showStep(3)" data-step="3">
+      <div class="step-circle">4</div>
+      <div class="step-name">AI 比對</div>
+      <div class="step-hint">30 秒出結果<br>三色標示</div>
+    </div>
+    <div class="step-col" onclick="showStep(4)" data-step="4">
+      <div class="step-circle">5</div>
+      <div class="step-name">匯出報告</div>
+      <div class="step-hint">PDF / CSV<br>品牌客製</div>
+    </div>
+  </div>
+
+  <div class="step-detail-wrap">
+
+    <!-- Step 0 -->
+    <div class="step-detail active" id="sd-0">
+      <div class="sd-label">Step 01 · 初始設定</div>
+      <div class="sd-title">輸入 Gemini API 金鑰，完成系統授權</div>
+      <div class="sd-grid">
+        <div>
+          <div class="sd-desc">開啟系統後，於設定區填入 Gemini API 金鑰，系統自動驗證連線。金鑰加密存於本機端，商業資料不上雲。</div>
+          <div class="sd-tags">
+            <span class="sd-tag">Gemini 2.0 Flash</span>
+            <span class="sd-tag">本機加密</span>
+            <span class="sd-tag">30 秒完成</span>
+          </div>
+        </div>
+        <div class="sd-mock">
+          <div class="sd-mock-bar">
+            <div class="smd" style="background:var(--rust)"></div>
+            <div class="smd" style="background:var(--sand)"></div>
+            <div class="smd" style="background:var(--sage)"></div>
+          </div>
+          <div class="sd-mock-body">
+            <span class="mo">// 系統設定</span><br>
+            <span class="mk">apiKey</span> → <span class="mv">sk-••••••••••••••</span><br>
+            <span class="mk">model</span>  → <span class="mv">gemini-2.0-flash</span><br>
+            <span class="mok">▸ 連線成功，系統就緒 ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-detail" id="sd-1">
+      <div class="sd-label">Step 02 · 建立產品庫</div>
+      <div class="sd-title">新增或 CSV 批次匯入產品規格資料</div>
+      <div class="sd-grid">
+        <div>
+          <div class="sd-desc">手動填寫 SKU、材質、幾何尺寸、AC 等級、防焰、隔音等 15 項規格；或直接上傳 CSV 批次匯入，首批 100 筆約半天完成。</div>
+          <div class="sd-tags">
+            <span class="sd-tag">SKU 管理</span>
+            <span class="sd-tag">CSV 匯入</span>
+            <span class="sd-tag">版本追蹤</span>
+          </div>
+        </div>
+        <div class="sd-mock">
+          <div class="sd-mock-bar">
+            <div class="smd" style="background:var(--rust)"></div>
+            <div class="smd" style="background:var(--sand)"></div>
+            <div class="smd" style="background:var(--sage)"></div>
+          </div>
+          <div class="sd-mock-body">
+            <span class="mk">sku</span>      → <span class="mv">"FLR-2401"</span><br>
+            <span class="mk">name</span>     → <span class="mv">"超耐磨實木紋 8mm"</span><br>
+            <span class="mk">ac_grade</span> → <span class="mv">"AC4"</span><br>
+            <span class="mk">sound</span>    → <span class="mv">"ΔLw ≥ 19dB"</span><br>
+            <span class="mok">▸ 產品建立完成 ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-detail" id="sd-2">
+      <div class="sd-label">Step 03 · 上傳規範文件</div>
+      <div class="sd-title">拖曳 PDF 或圖片，AI 自動萃取 15 項參數</div>
+      <div class="sd-grid">
+        <div>
+          <div class="sd-desc">將客戶提供的規範文件（PDF、掃描圖、截圖皆可）直接拖入上傳區，AI 自動識別並萃取防焰、耐磨、隔音等關鍵規格，無需手動輸入。</div>
+          <div class="sd-tags">
+            <span class="sd-tag">PDF / 圖片</span>
+            <span class="sd-tag">掃描 OCR</span>
+            <span class="sd-tag">多語言識別</span>
+          </div>
+        </div>
+        <div class="sd-mock">
+          <div class="sd-mock-bar">
+            <div class="smd" style="background:var(--rust)"></div>
+            <div class="smd" style="background:var(--sand)"></div>
+            <div class="smd" style="background:var(--sage)"></div>
+          </div>
+          <div class="sd-mock-body">
+            <span class="mo">// 解析規範文件中...</span><br>
+            <span class="mok">✓</span> <span class="mo">防焰等級 → CNS 7614</span><br>
+            <span class="mok">✓</span> <span class="mo">耐磨層厚 → ≥ 0.7mm</span><br>
+            <span class="mok">✓</span> <span class="mo">防滑係數 → R10</span><br>
+            <span class="mok">▸ 識別完成，共 12 項</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-detail" id="sd-3">
+      <div class="sd-label">Step 04 · AI 規範比對</div>
+      <div class="sd-title">一鍵啟動，30 秒生成逐項差異分析</div>
+      <div class="sd-grid">
+        <div>
+          <div class="sd-desc">AI 自動比對所有規格，以綠（符合）、黃（待確認）、紅（不符合）三色標示結果，並給出具體補件建議。</div>
+          <div class="sd-tags">
+            <span class="sd-tag">三色狀態標示</span>
+            <span class="sd-tag">補件建議</span>
+            <span class="sd-tag">30 秒完成</span>
+          </div>
+        </div>
+        <div class="sd-mock">
+          <div class="sd-mock-bar">
+            <div class="smd" style="background:var(--rust)"></div>
+            <div class="smd" style="background:var(--sand)"></div>
+            <div class="smd" style="background:var(--sage)"></div>
+          </div>
+          <div class="sd-mock-body">
+            <span class="mok">✓</span> <span class="mo">甲醛 E1 → 符合</span><br>
+            <span class="mok">✓</span> <span class="mo">耐磨 AC4 → 符合</span><br>
+            <span class="mwarn">⚠ ESD ≤10⁹Ω → 待確認</span><br>
+            <span class="mwarn">✗ CNS 7614 → 未達標</span><br>
+            <span class="mo">建議：補 CNS 7614 測試報告</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-detail" id="sd-4">
+      <div class="sd-label">Step 05 · 匯出報告</div>
+      <div class="sd-title">一鍵產出標準化合規報告，可直接交付客戶</div>
+      <div class="sd-grid">
+        <div>
+          <div class="sd-desc">點擊匯出，即可獲得含品牌抬頭、逐項說明、改善建議的 PDF 報告，或供系統整合的 CSV 數據。</div>
+          <div class="sd-tags">
+            <span class="sd-tag">PDF 報告</span>
+            <span class="sd-tag">CSV 數據</span>
+            <span class="sd-tag">繁中 / 英文</span>
+            <span class="sd-tag">品牌客製</span>
+          </div>
+        </div>
+        <div class="sd-mock">
+          <div class="sd-mock-bar">
+            <div class="smd" style="background:var(--rust)"></div>
+            <div class="smd" style="background:var(--sand)"></div>
+            <div class="smd" style="background:var(--sage)"></div>
+          </div>
+          <div class="sd-mock-body">
+            <span class="mo">// 規範分析報告.pdf</span><br>
+            <span class="mk">標題</span> → <span class="mv">SEMi 太格 規範分析</span><br>
+            <span class="mk">產品</span> → <span class="mv">FLR-2401</span><br>
+            <span class="mk">結果</span> → <span class="mv">4/5 項通過</span><br>
+            <span class="mok">▸ 報告匯出完成 ↓ PDF ↓ CSV</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /step-detail-wrap -->
+</div>
+
+
+<!-- ══════════════════
+  SLIDE 4 · LIVE DEMO
+══════════════════ -->
+<div class="slide" id="s4" style="padding-top:5.5rem;padding-bottom:2rem;">
+  <div class="fi" style="margin-bottom:1.25rem;">
+    <div class="sec-tag">Live Demo · 互動展示</div>
+    <h2 style="font-size:clamp(1.6rem,3vw,2.4rem);margin-bottom:0.5rem;">這就是工具的真實操作介面</h2>
+    <p style="font-size:0.93rem;color:var(--text-muted);font-weight:300;">點選標籤切換功能，或直接點「模擬分析」體驗 AI 執行流程。</p>
+  </div>
+
+  <!-- Browser Chrome -->
+  <div class="fi d1" style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:14px;overflow:hidden;box-shadow:0 12px 48px rgba(45,43,42,0.08);">
+
+    <!-- Traffic lights + URL bar -->
+    <div style="background:#F2F0EC;padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-light);">
+      <div style="display:flex;gap:6px;">
+        <div style="width:11px;height:11px;border-radius:50%;background:#FF5F57;"></div>
+        <div style="width:11px;height:11px;border-radius:50%;background:#FFBD2E;"></div>
+        <div style="width:11px;height:11px;border-radius:50%;background:#28C840;"></div>
+      </div>
+      <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:4px 12px;font-family:var(--mono);font-size:0.68rem;color:var(--text-muted);text-align:center;">
+        📄 floor-spec-analyzer.html
+      </div>
+    </div>
+
+    <!-- App content -->
+    <div style="padding:1.5rem 2rem;max-height:500px;overflow-y:auto;" id="demo-app">
+
+      <!-- Top bar -->
+      <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--border-med);padding-bottom:1rem;margin-bottom:1.5rem;">
+        <div style="font-family:var(--serif);font-size:1.2rem;font-weight:500;">SEMI 太格 <span style="font-family:var(--sans);font-weight:300;color:var(--text-muted);font-size:0.85rem;margin-left:6px;">規範分析系統</span></div>
+        <div style="font-family:var(--mono);font-size:0.65rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;">Gemini 整合版</div>
+      </div>
+
+      <!-- Setup card -->
+      <div id="demo-setup" style="background:var(--primary-l);border:1px solid #E0D4C4;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+        <div style="display:inline-flex;align-items:center;gap:5px;background:var(--sage-l);color:var(--sage);border-radius:99px;font-size:0.68rem;font-weight:500;padding:3px 10px;margin-bottom:0.6rem;">
+          <i class="ti ti-brand-google"></i> 免費申請 API
+        </div>
+        <div style="font-family:var(--serif);font-size:0.95rem;font-weight:500;margin-bottom:0.4rem;display:flex;align-items:center;gap:6px;">
+          <i class="ti ti-key" style="color:var(--primary);"></i> 系統授權金鑰設定
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.75rem;font-weight:300;">金鑰僅儲存於您的本機瀏覽器中，確保商業資料隱私不外洩。</div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:7px 12px;font-family:var(--mono);font-size:0.72rem;color:var(--text-muted);">AIzaSy••••••••••••••••••••••</div>
+          <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:7px 12px;font-size:0.72rem;color:var(--text-muted);">Gemini 2.5 Flash ▾</div>
+          <div style="background:var(--sage);color:#fff;border-radius:6px;padding:7px 14px;font-size:0.72rem;font-weight:500;cursor:default;">✓ 已連線</div>
+        </div>
+      </div>
+
+      <!-- Tab nav -->
+      <div style="display:flex;gap:1.5rem;border-bottom:1px solid var(--border-light);margin-bottom:1.25rem;" id="demo-tabs">
+        <button onclick="demoTab('upload')" id="dtab-upload"
+          style="padding:0 0 10px;background:none;border:none;border-bottom:2px solid var(--primary);font-size:0.82rem;font-weight:500;color:var(--text-main);cursor:pointer;display:flex;align-items:center;gap:5px;">
+          <i class="ti ti-file-upload"></i> 規範上傳比對
+        </button>
+        <button onclick="demoTab('compare')" id="dtab-compare"
+          style="padding:0 0 10px;background:none;border:none;border-bottom:2px solid transparent;font-size:0.82rem;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:5px;">
+          <i class="ti ti-arrows-diff"></i> 選品比較分析
+        </button>
+        <button onclick="demoTab('db')" id="dtab-db"
+          style="padding:0 0 10px;background:none;border:none;border-bottom:2px solid transparent;font-size:0.82rem;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:5px;">
+          <i class="ti ti-database"></i> 內部產品庫
+        </button>
+      </div>
+
+      <!-- Panel: upload -->
+      <div id="dpanel-upload">
+        <!-- Upload zone -->
+        <div id="demo-dropzone-wrap" onclick="demoStartUpload()"
+          style="border:1.5px dashed var(--border-med);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--bg-card);margin-bottom:1rem;"
+          onmouseenter="this.style.borderColor='var(--primary)';this.style.background='var(--primary-l)'"
+          onmouseleave="this.style.borderColor='var(--border-med)';this.style.background='var(--bg-card)'">
+          <i class="ti ti-cloud-upload" style="font-size:1.8rem;color:var(--text-muted);display:block;margin-bottom:8px;"></i>
+          <div style="font-size:0.9rem;font-weight:500;margin-bottom:4px;">上傳規範圖面或測試報告（基準）</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);font-weight:300;">建議單頁截圖 (PNG/JPG) 速度最快，亦支援輕量 PDF</div>
+        </div>
+
+        <!-- Compare mode radio -->
+        <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;font-size:0.8rem;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;">
+              <input type="radio" name="demo-cmp" value="file" checked style="accent-color:var(--primary);"> 與另一份外部檔案比對
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;">
+              <input type="radio" name="demo-cmp" value="db" style="accent-color:var(--primary);"> 與內部資料庫產品比對
+            </label>
+          </div>
+        </div>
+
+        <!-- Second upload zone -->
+        <div style="border:1.5px dashed var(--border-med);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;background:var(--bg-card);margin-bottom:1rem;font-size:0.82rem;color:var(--text-muted);"
+          onmouseenter="this.style.borderColor='var(--primary)';this.style.background='var(--primary-l)'"
+          onmouseleave="this.style.borderColor='var(--border-med)';this.style.background='var(--bg-card)'">
+          <i class="ti ti-file-upload" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>
+          上傳產品型錄或測試報告（比對）
+        </div>
+
+        <!-- Run button -->
+        <button id="demo-run-btn" onclick="demoRunAnalysis()"
+          style="width:100%;padding:12px;border:none;border-radius:8px;background:var(--text-main);color:white;font-size:0.85rem;font-weight:500;letter-spacing:0.8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;"
+          onmouseenter="this.style.background='#1A1918'" onmouseleave="this.style.background='var(--text-main)'">
+          <span id="demo-run-label">▶ 點此模擬 AI 分析</span>
+          <i class="ti ti-arrow-right"></i>
+        </button>
+
+        <div id="demo-result-area" style="margin-top:1rem;"></div>
+      </div>
+
+      <!-- Panel: compare (hidden) -->
+      <div id="dpanel-compare" style="display:none;">
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;font-weight:300;">請依序點選產品 A 與產品 B</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;">
+          <div onclick="demoSelProd(this,'A')" style="border:1px solid var(--border-light);border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;background:var(--bg-card);"
+            onmouseenter="this.style.borderColor='var(--border-med)'" onmouseleave="this.style.borderColor='var(--border-light)'">
+            <div style="font-size:0.68rem;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px;">SKU: FLR-2401</div>
+            <div style="font-weight:500;font-size:0.85rem;">超耐磨木紋 8mm</div>
+            <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+              <span style="background:var(--primary-l);color:var(--primary);font-size:0.62rem;padding:1px 6px;border-radius:3px;">AC4</span>
+              <span style="background:var(--sage-l);color:var(--sage);font-size:0.62rem;padding:1px 6px;border-radius:3px;">E1</span>
+            </div>
+          </div>
+          <div onclick="demoSelProd(this,'B')" style="border:1px solid var(--border-light);border-radius:8px;padding:12px;cursor:pointer;transition:all 0.2s;background:var(--bg-card);"
+            onmouseenter="this.style.borderColor='var(--border-med)'" onmouseleave="this.style.borderColor='var(--border-light)'">
+            <div style="font-size:0.68rem;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px;">SKU: FLR-3308</div>
+            <div style="font-weight:500;font-size:0.85rem;">一體成型止滑板</div>
+            <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+              <span style="background:var(--primary-l);color:var(--primary);font-size:0.62rem;padding:1px 6px;border-radius:3px;">T級</span>
+              <span style="background:var(--rust-l);color:var(--rust);font-size:0.62rem;padding:1px 6px;border-radius:3px;">CNS 7614</span>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border-light);border-radius:8px;padding:12px;cursor:pointer;background:var(--bg-card);"
+            onmouseenter="this.style.borderColor='var(--border-med)'" onmouseleave="this.style.borderColor='var(--border-light)'">
+            <div style="font-size:0.68rem;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px;">SKU: FLR-1102</div>
+            <div style="font-weight:500;font-size:0.85rem;">SPC 石塑地板</div>
+            <div style="display:flex;gap:4px;margin-top:6px;">
+              <span style="background:var(--sand-l);color:#996633;font-size:0.62rem;padding:1px 6px;border-radius:3px;">AC3</span>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border-light);border-radius:8px;padding:12px;cursor:pointer;background:var(--bg-card);"
+            onmouseenter="this.style.borderColor='var(--border-med)'" onmouseleave="this.style.borderColor='var(--border-light)'">
+            <div style="font-size:0.68rem;color:var(--text-muted);font-family:var(--mono);margin-bottom:4px;">SKU: FLR-4501</div>
+            <div style="font-weight:500;font-size:0.85rem;">橡木仿紋強化板</div>
+            <div style="display:flex;gap:4px;margin-top:6px;">
+              <span style="background:var(--primary-l);color:var(--primary);font-size:0.62rem;padding:1px 6px;border-radius:3px;">AC5</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-align:center;padding:0.5rem;font-family:var(--mono);">點選兩件產品後即可執行比較分析</div>
+      </div>
+
+      <!-- Panel: db (hidden) -->
+      <div id="dpanel-db" style="display:none;">
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;">
+          <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:8px;padding:0.9rem 0.75rem;text-align:center;">
+            <div style="font-family:var(--serif);font-size:1.4rem;color:var(--text-main);line-height:1;margin-bottom:3px;">24</div>
+            <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">產品總數</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:8px;padding:0.9rem 0.75rem;text-align:center;">
+            <div style="font-family:var(--serif);font-size:1.4rem;color:var(--sage);line-height:1;margin-bottom:3px;">18</div>
+            <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">已認證</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:8px;padding:0.9rem 0.75rem;text-align:center;">
+            <div style="font-family:var(--serif);font-size:1.4rem;color:var(--sand);line-height:1;margin-bottom:3px;">4</div>
+            <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">審核中</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:8px;padding:0.9rem 0.75rem;text-align:center;">
+            <div style="font-family:var(--serif);font-size:1.4rem;color:var(--rust);line-height:1;margin-bottom:3px;">2</div>
+            <div style="font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">待更新</div>
+          </div>
+        </div>
+        <!-- Toolbar -->
+        <div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center;">
+          <div style="flex:1;border:1px solid var(--border-light);border-radius:6px;padding:6px 12px;font-size:0.78rem;color:var(--text-muted);background:transparent;">🔍 搜尋料號或產品名稱…</div>
+          <div style="background:var(--primary);color:#fff;border-radius:6px;padding:6px 12px;font-size:0.72rem;font-weight:500;cursor:pointer;white-space:nowrap;"><i class="ti ti-plus"></i> 新增產品</div>
+          <div style="border:1px solid var(--border-light);border-radius:6px;padding:6px 12px;font-size:0.72rem;color:var(--text-muted);cursor:pointer;white-space:nowrap;"><i class="ti ti-file-export"></i> 匯出</div>
+        </div>
+        <!-- Mini table -->
+        <div style="border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(45,43,42,0.04);">
+          <table style="width:100%;border-collapse:collapse;font-size:0.75rem;background:var(--bg-card);">
+            <thead>
+              <tr style="background:var(--bg-base);">
+                <th style="padding:8px 12px;font-weight:400;color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border-light);">料號</th>
+                <th style="padding:8px 12px;font-weight:400;color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border-light);">產品名稱</th>
+                <th style="padding:8px 12px;font-weight:400;color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border-light);">AC 等級</th>
+                <th style="padding:8px 12px;font-weight:400;color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border-light);">狀態</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border-light);">
+                <td style="padding:8px 12px;font-family:var(--mono);color:var(--primary);">FLR-2401</td>
+                <td style="padding:8px 12px;">超耐磨木紋 8mm</td>
+                <td style="padding:8px 12px;">AC4</td>
+                <td style="padding:8px 12px;"><span style="background:var(--sage-l);color:var(--sage);font-size:0.65rem;padding:2px 7px;border-radius:3px;font-weight:500;">✓ 認證</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border-light);">
+                <td style="padding:8px 12px;font-family:var(--mono);color:var(--primary);">FLR-3308</td>
+                <td style="padding:8px 12px;">一體成型止滑板</td>
+                <td style="padding:8px 12px;">T 級</td>
+                <td style="padding:8px 12px;"><span style="background:var(--sage-l);color:var(--sage);font-size:0.65rem;padding:2px 7px;border-radius:3px;font-weight:500;">✓ 認證</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border-light);">
+                <td style="padding:8px 12px;font-family:var(--mono);color:var(--primary);">FLR-1102</td>
+                <td style="padding:8px 12px;">SPC 石塑地板</td>
+                <td style="padding:8px 12px;">AC3</td>
+                <td style="padding:8px 12px;"><span style="background:var(--sand-l);color:#996633;font-size:0.65rem;padding:2px 7px;border-radius:3px;font-weight:500;">⚑ 審核中</span></td>
+              </tr>
+              <tr>
+                <td style="padding:8px 12px;font-family:var(--mono);color:var(--primary);">FLR-4501</td>
+                <td style="padding:8px 12px;">橡木仿紋強化板</td>
+                <td style="padding:8px 12px;">AC5</td>
+                <td style="padding:8px 12px;"><span style="background:var(--sage-l);color:var(--sage);font-size:0.65rem;padding:2px 7px;border-radius:3px;font-weight:500;">✓ 認證</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /demo-app -->
+  </div>
+</div>
+
+
+<!-- ══════════════════
+  SLIDE 5 · REAL CASE
+══════════════════ -->
+<div class="slide" id="s5">
+  <div class="fi">
+    <div class="sec-tag">Real Case Output</div>
+    <h2>這是 AI 實際輸出的<br>規範比對報告</h2>
+    <p class="lead">以下來自真實上傳的分析報告，展示系統比對的深度與報告品質。</p>
+  </div>
+
+  <div class="fi d1" style="overflow-x:auto;">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>規格項目</th>
+          <th class="th-a">橡膠梯級防滑 PVC 地磚（客戶規範）</th>
+          <th class="th-b">一體成型 PVC 色帶止滑板（我方產品）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>總厚度</td>
+          <td class="td-a">2.0 mm</td>
+          <td class="td-b win">≥ 3.45 mm ▲ 優</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>耐磨層</td>
+          <td class="td-a">≥ 0.7 mm</td>
+          <td class="td-b win">≥ 1 mm ▲ 優</td>
+        </tr>
+        <tr>
+          <td>耐磨等級</td>
+          <td class="td-a"><span class="dim">未明確標示</span></td>
+          <td class="td-b win">T 級（最高）▲</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>防焰性</td>
+          <td class="td-a">CNS 8907</td>
+          <td class="td-b win">CNS 7614 一級 ▲ 優</td>
+        </tr>
+        <tr>
+          <td>防滑性</td>
+          <td class="td-a win">DIN 51130 ≥ R10 ▲</td>
+          <td class="td-b">CNS 8907 ≥ 0.4</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>環保特性</td>
+          <td class="td-a win">70% 再生 PVC ▲</td>
+          <td class="td-b"><span class="dim">未標示</span></td>
+        </tr>
+        <tr>
+          <td>安裝方式</td>
+          <td class="td-a" style="color:var(--rust);">需搭配鋁止滑條</td>
+          <td class="td-b win">一體成型，施工簡便 ▲</td>
+        </tr>
+        <tr>
+          <td>AI 綜合判斷</td>
+          <td class="td-a"><span class="badge b-warn">部分符合</span></td>
+          <td class="td-b"><span class="badge b-pass">主要符合 · 推薦</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.25rem;" class="fi d2">
+    <div style="background:var(--sage-l);border:1px solid #C4D4C3;border-radius:10px;padding:1.25rem 1.5rem;">
+      <div style="font-weight:600;color:var(--sage);margin-bottom:0.75rem;font-size:0.95rem;display:flex;align-items:center;gap:6px;"><i class="ti ti-check"></i> AI 推薦理由</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.45rem;">
+        <li style="font-size:0.87rem;color:var(--text-muted);display:flex;gap:6px;align-items:flex-start;"><span style="color:var(--sage);flex-shrink:0;">✦</span>一體成型設計，施工快，接縫少</li>
+        <li style="font-size:0.87rem;color:var(--text-muted);display:flex;gap:6px;align-items:flex-start;"><span style="color:var(--sage);flex-shrink:0;">✦</span>耐磨 T 級 + CNS 7614 一級，雙重規格優於基準</li>
+        <li style="font-size:0.87rem;color:var(--text-muted);display:flex;gap:6px;align-items:flex-start;"><span style="color:var(--sage);flex-shrink:0;">✦</span>複合隔音材料 + 耐藥品，附加功能更豐富</li>
+      </ul>
+    </div>
+    <div style="background:var(--sand-l);border:1px solid #E8D4B4;border-radius:10px;padding:1.25rem 1.5rem;">
+      <div style="font-weight:600;color:#996633;margin-bottom:0.75rem;font-size:0.95rem;display:flex;align-items:center;gap:6px;"><i class="ti ti-alert-triangle"></i> 待補件提醒</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.45rem;">
+        <li style="font-size:0.87rem;color:var(--text-muted);display:flex;gap:6px;align-items:flex-start;"><span style="color:var(--sand);flex-shrink:0;">◇</span>環保資訊需補充再生料比例與塑化劑說明</li>
+        <li style="font-size:0.87rem;color:var(--text-muted);display:flex;gap:6px;align-items:flex-start;"><span style="color:var(--sand);flex-shrink:0;">◇</span>厚度 3.45mm，改造場所需確認地面高度餘裕</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════
+  SLIDE 6 · ROI + CTA
+══════════════════ -->
+<div class="slide" id="s6">
+  <div class="fi">
+    <div class="sec-tag">ROI & Next Steps</div>
+    <h2>這對太格的<br>實際意義是什麼？</h2>
+    <p class="lead">拖動滑桿，看看每月省下多少小時，以及這代表多少真實成本。</p>
+  </div>
+
+  <div class="roi-panel fi d1">
+    <div>
+      <div class="slider-wrap">
+        <label>
+          <span>每月規範案件數</span>
+          <span id="valCount" style="color:var(--primary);font-size:1.3rem;font-weight:700;font-family:var(--serif);">30 件</span>
+        </label>
+        <input type="range" id="roiSlider" min="10" max="100" value="30" step="5" oninput="calcROI()">
+      </div>
+      <div style="display:flex;justify-content:space-between;padding-top:1.5rem;border-top:1px solid var(--border-light);">
+        <div>
+          <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.2rem;">傳統人工</div>
+          <div style="font-family:var(--mono);font-size:1.3rem;color:var(--rust);text-decoration:line-through;" id="valManual">22.5 h</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:0.2rem;">使用 AI 系統</div>
+          <div style="font-family:var(--mono);font-size:1.3rem;color:var(--sage);" id="valAI">1.0 h</div>
+        </div>
+      </div>
+      <div style="margin-top:1.25rem;padding:1rem 1.25rem;background:var(--bg-base);border-radius:8px;border:1px solid var(--border-light);font-size:0.88rem;color:var(--text-muted);line-height:1.8;">
+        以工程師時薪 NT$400 估算，每月可節省
+        <strong style="color:var(--primary);" id="valCost">NT$8,600</strong>，
+        全年累計 <strong style="color:var(--primary);" id="valYear">NT$103,200</strong>。
+      </div>
+    </div>
+    <div class="roi-result">
+      <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.3rem;">每月為團隊省下</div>
+      <div class="roi-big" id="valSaved">21.5</div>
+      <div style="color:var(--primary-h);font-weight:500;font-size:1rem;margin-bottom:0.75rem;">小時的行政作業</div>
+      <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.7;">這些時間可以全數投入<br>高價值的客戶開發與維繫。</p>
+    </div>
+  </div>
+
+  <div style="margin-top:3rem;padding-top:2.5rem;border-top:1px solid var(--border-light);" class="fi d2">
+    <div style="font-family:var(--serif);font-size:1.6rem;font-weight:500;margin-bottom:0.75rem;">準備好讓系統為團隊工作了嗎？</div>
+    <p style="font-size:0.95rem;color:var(--text-muted);max-width:500px;margin-bottom:1.75rem;font-weight:300;line-height:1.8;">這份工具已完成核心功能，可立即試用。下一步是擴充報告模板與自動通知功能，歡迎進一步討論導入計畫。</p>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+      <a href="mailto:contact@semi-tage.com" class="btn">安排 Demo 演示</a>
+      <a href="mailto:contact@semi-tage.com" class="btn-outline">索取完整提案書</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── BOTTOM NAV ── -->
+<div style="position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;gap:0.75rem;align-items:center;z-index:200;background:rgba(249,248,246,0.92);backdrop-filter:blur(12px);border:1px solid var(--border-light);border-radius:50px;padding:0.6rem 1.25rem;box-shadow:0 4px 20px rgba(45,43,42,0.08);" id="bottom-nav">
+  <button onclick="goSlide(currentSlide-1)" id="btn-prev"
+    style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border-light);background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all 0.2s;font-size:0.9rem;">
+    <i class="ti ti-chevron-left"></i>
+  </button>
+  <span style="font-family:var(--mono);font-size:0.72rem;color:var(--text-muted);min-width:36px;text-align:center;" id="bottom-counter">1 / 6</span>
+  <button onclick="goSlide(currentSlide+1)" id="btn-next"
+    style="width:32px;height:32px;border-radius:50%;border:none;background:var(--primary);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;transition:all 0.2s;font-size:0.9rem;">
+    <i class="ti ti-chevron-right"></i>
+  </button>
+</div>
+
+
+<script>
+  /* ── SLIDE NAVIGATION ── */
+  const TOTAL = 6;
+  let currentSlide = 1;
+
+  function buildDots() {
+    const wrap = document.getElementById('nav-dots');
+    wrap.innerHTML = '';
+    for (let i = 1; i <= TOTAL; i++) {
+      const d = document.createElement('div');
+      d.className = 'np' + (i === 1 ? ' on' : '');
+      d.onclick = () => goSlide(i);
+      wrap.appendChild(d);
+    }
+  }
+
+  function goSlide(n) {
+    if (n < 1 || n > TOTAL) return;
+    // Hide current slide
+    const prev = document.getElementById('s' + currentSlide);
+    if (prev) {
+      prev.classList.remove('show');
+      prev.style.display = 'none';
+      prev.querySelectorAll('.fi').forEach(el => el.classList.remove('vis'));
+    }
+    currentSlide = n;
+    // Show new slide
+    const cur = document.getElementById('s' + currentSlide);
+    if (cur) {
+      cur.style.display = 'flex';
+      void cur.offsetWidth; // force reflow so CSS animation replays
+      cur.classList.add('show');
+      setTimeout(() => cur.querySelectorAll('.fi').forEach(el => el.classList.add('vis')), 60);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    // Update dots
+    document.querySelectorAll('.np').forEach((d, i) => d.classList.toggle('on', i + 1 === currentSlide));
+    document.getElementById('slide-counter').textContent = currentSlide + ' / ' + TOTAL;
+    document.getElementById('bottom-counter').textContent = currentSlide + ' / ' + TOTAL;
+    // Arrows
+    document.getElementById('btn-prev').style.opacity = currentSlide === 1 ? '0.3' : '1';
+    document.getElementById('btn-prev').style.cursor = currentSlide === 1 ? 'default' : 'pointer';
+    document.getElementById('btn-next').style.opacity = currentSlide === TOTAL ? '0.3' : '1';
+    document.getElementById('btn-next').style.cursor = currentSlide === TOTAL ? 'default' : 'pointer';
+  }
+
+  // Init: hide all slides via JS, then show slide 1
+  document.querySelectorAll('.slide').forEach(s => { s.classList.remove('show'); s.style.display = 'none'; });
+  const s1El = document.getElementById('s1');
+  s1El.style.display = 'flex';
+  s1El.classList.add('show');
+  buildDots();
+  // Trigger first slide animations
+  setTimeout(() => document.querySelectorAll('#s1 .fi').forEach(el => el.classList.add('vis')), 100);
+  document.getElementById('btn-prev').style.opacity = '0.3';
+
+  // Keyboard nav
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goSlide(currentSlide + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goSlide(currentSlide - 1);
+  });
+
+  /* ── STEP INTERACTIVITY ── */
+  let currentStep = 0;
+
+  function showStep(n) {
+    currentStep = n;
+    document.querySelectorAll('.step-col').forEach((col, i) => {
+      col.classList.remove('active', 'done');
+      if (i < n) col.classList.add('done');
+      if (i === n) col.classList.add('active');
+    });
+    document.querySelectorAll('.step-detail').forEach(d => d.classList.remove('active'));
+    const target = document.getElementById('sd-' + n);
+    if (target) target.classList.add('active');
+  }
+  window.showStep = showStep;
+
+  /* ── DEMO SIMULATION ── */
+  function runDemo() {
+    const area = document.getElementById('demo-area');
+    area.innerHTML = `
+      <div style="padding:2.5rem;text-align:center;">
+        <i class="ti ti-loader-2" style="font-size:2.5rem;color:var(--primary);display:inline-block;animation:spin 1s linear infinite;margin-bottom:1.25rem;"></i>
+        <h3 style="font-family:var(--serif);color:var(--text-main);margin-bottom:0.4rem;">AI 正在解析規範文件...</h3>
+        <p style="color:var(--text-muted);font-size:0.9rem;">萃取關鍵參數並與產品資料庫進行比對</p>
+      </div>`;
+    setTimeout(() => {
+      area.innerHTML = `
+        <div style="text-align:left;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+            <span style="font-family:var(--serif);font-size:1.1rem;font-weight:500;color:var(--sage);display:flex;align-items:center;gap:7px;"><i class="ti ti-check"></i> 分析完成</span>
+            <span style="font-family:var(--mono);font-size:0.75rem;color:var(--text-muted);">耗時 1.8 秒</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+            <div style="background:var(--bg-base);padding:1rem 1.25rem;border-radius:8px;border:1px solid var(--border-light);">
+              <div style="font-size:0.75rem;color:var(--text-muted);font-family:var(--mono);margin-bottom:0.3rem;">最佳匹配產品</div>
+              <div style="font-family:var(--serif);font-size:1.05rem;font-weight:500;">一體成型止滑板</div>
+              <div style="font-family:var(--mono);font-size:0.78rem;color:var(--primary);margin-top:2px;">匹配度 94%</div>
+            </div>
+            <div style="background:var(--bg-base);padding:1rem 1.25rem;border-radius:8px;border:1px solid var(--border-light);">
+              <div style="font-size:0.75rem;color:var(--text-muted);font-family:var(--mono);margin-bottom:0.3rem;">合規審查結果</div>
+              <div style="font-family:var(--serif);font-size:1.05rem;font-weight:500;">4 / 5 項通過</div>
+              <div style="font-family:var(--mono);font-size:0.78rem;color:var(--rust);margin-top:2px;">1 項待補件</div>
+            </div>
+          </div>
+          <div style="background:var(--sage-l);padding:1rem 1.25rem;border-radius:8px;border:1px solid #C4D4C3;margin-bottom:0.75rem;font-size:0.9rem;">
+            <strong style="color:var(--sage);">✦ 符合項目（4項）</strong><br>
+            <span style="color:var(--text-muted);font-size:0.85rem;">耐磨等級 AC4 ✓ &nbsp;·&nbsp; 甲醛逸散 E1 ✓ &nbsp;·&nbsp; 防滑係數 &gt;0.4 ✓ &nbsp;·&nbsp; 隔音 ΔLw≥19dB ✓</span>
+          </div>
+          <div style="background:var(--rust-l);padding:1rem 1.25rem;border-radius:8px;border:1px solid #DDB8B8;margin-bottom:1.25rem;font-size:0.9rem;">
+            <strong style="color:var(--rust);">⚠ 差異警示：</strong>規範要求防焰達 CNS 7614 一級，此款目前為 CNS 8907，尚未達標。<br>
+            <span style="color:var(--primary);font-size:0.85rem;font-weight:500;">➔ 建議：向供應商索取 CNS 7614 測試報告，或改選 FLR-2401 款。</span>
+          </div>
+          <div style="text-align:center;display:flex;gap:0.75rem;justify-content:center;">
+            <button class="btn btn-sm" onclick="resetDemo()">重新展示</button>
+            <button class="btn-outline" style="padding:0.55rem 1.25rem;font-size:0.88rem;">↓ 下載 PDF 報告</button>
+          </div>
+        </div>`;
+    }, 2000);
+  }
+
+  function resetDemo() {
+    document.getElementById('demo-area').innerHTML = `
+      <div class="demo-dropzone" onclick="runDemo()">
+        <i class="ti ti-cloud-upload" style="font-size:3rem;color:var(--primary);margin-bottom:1rem;display:block;"></i>
+        <h3 style="color:var(--text-main);margin-bottom:0.5rem;font-family:var(--serif);font-size:1.3rem;">點擊模擬上傳規範文件</h3>
+        <p style="color:var(--text-muted);font-size:0.9rem;">AI 將自動萃取規格並與產品資料庫進行比對分析</p>
+      </div>`;
+  }
+  window.runDemo = runDemo;
+  window.resetDemo = resetDemo;
+
+  /* ── LIVE DEMO (Slide 4) ── */
+
+  function demoTab(tab) {
+    ['upload','compare','db'].forEach(t => {
+      const panel = document.getElementById('dpanel-' + t);
+      const btn   = document.getElementById('dtab-' + t);
+      if (!panel || !btn) return;
+      panel.style.display = t === tab ? 'block' : 'none';
+      btn.style.borderBottomColor = t === tab ? 'var(--primary)' : 'transparent';
+      btn.style.color = t === tab ? 'var(--text-main)' : 'var(--text-muted)';
+      btn.style.fontWeight = t === tab ? '500' : '400';
+    });
+  }
+  window.demoTab = demoTab;
+
+  function demoStartUpload() {
+    const dz = document.getElementById('demo-dropzone-wrap');
+    if (!dz) return;
+    dz.style.borderColor = 'var(--primary)';
+    dz.style.background = 'var(--primary-l)';
+    dz.innerHTML = `
+      <i class="ti ti-file-check" style="font-size:1.8rem;color:var(--primary);display:block;margin-bottom:8px;"></i>
+      <div style="font-size:0.9rem;font-weight:500;margin-bottom:4px;color:var(--primary);">客戶規範_2026Q2.pdf 已載入</div>
+      <div style="font-size:0.72rem;color:var(--text-muted);">1 頁 · PDF · 點擊「模擬 AI 分析」執行比對</div>`;
+    dz.onclick = null;
+  }
+  window.demoStartUpload = demoStartUpload;
+
+  function demoRunAnalysis() {
+    const btn   = document.getElementById('demo-run-btn');
+    const label = document.getElementById('demo-run-label');
+    const area  = document.getElementById('demo-result-area');
+    if (!btn || !area) return;
+    // Disable
+    btn.disabled = true;
+    label.textContent = 'AI 分析中…';
+    btn.style.background = 'var(--border-med)';
+    // Progress status
+    area.innerHTML = `
+      <div style="background:var(--primary-l);border:1px solid #E0D4C4;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:0.82rem;color:var(--primary);">
+        <div style="width:13px;height:13px;border:2px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></div>
+        <div>
+          <div style="font-weight:500;margin-bottom:2px;">正在解析規範文件並比對產品資料庫…</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);">萃取參數 → 比對 24 件產品 → 生成報告</div>
+          <div style="height:2px;background:rgba(0,0,0,0.06);border-radius:99px;margin-top:8px;overflow:hidden;">
+            <div id="demo-prog" style="height:100%;background:var(--primary);border-radius:99px;width:0%;transition:width 0.3s;"></div>
+          </div>
+        </div>
+      </div>`;
+    // Animate progress bar
+    let p = 0;
+    const prog = document.getElementById('demo-prog');
+    const iv = setInterval(() => {
+      p += Math.random() * 18;
+      if (p > 95) p = 95;
+      if (prog) prog.style.width = p + '%';
+    }, 250);
+    // Show result after 2s
+    setTimeout(() => {
+      clearInterval(iv);
+      if (prog) prog.style.width = '100%';
+      setTimeout(() => {
+        area.innerHTML = `
+          <div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:10px;overflow:hidden;">
+
+            <!-- Report header -->
+            <div style="padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:baseline;">
+              <div>
+                <div style="font-family:var(--serif);font-size:1.1rem;font-weight:500;">SEMI 太格 <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted);margin-left:6px;">規範分析報告</span></div>
+              </div>
+              <span style="font-family:var(--mono);font-size:0.68rem;color:var(--sage);">✓ 分析完成 · 1.8s</span>
+            </div>
+
+            <!-- Scrollable report body -->
+            <div style="padding:1.25rem 1.5rem;max-height:340px;overflow-y:auto;font-size:0.78rem;line-height:1.7;">
+
+              <!-- Section 1 -->
+              <div style="font-family:var(--serif);font-size:0.95rem;font-weight:500;margin-bottom:0.9rem;">1. 規格對照表</div>
+              <div style="overflow-x:auto;margin-bottom:1.5rem;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.73rem;">
+                  <thead>
+                    <tr style="border-top:1.5px solid var(--text-main);border-bottom:1px solid var(--border-med);">
+                      <th style="padding:7px 10px;font-weight:500;text-align:left;width:18%;color:var(--text-muted);">規格項目</th>
+                      <th style="padding:7px 10px;font-weight:500;text-align:left;">第一份文件（基準）：防滑多層聚氯乙烯捲狀地磚</th>
+                      <th style="padding:7px 10px;font-weight:500;text-align:left;">第二份文件（產品）：乙烯基無縫顆粒止滑地板 (TARASAFE ULTRA H2O)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom:1px solid var(--border-light);">
+                      <td style="padding:7px 10px;font-weight:500;color:var(--text-main);">縫厚度</td>
+                      <td style="padding:7px 10px;">2.0 mm</td>
+                      <td style="padding:7px 10px;">≥ 2.0 mm</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);background:var(--bg-base);">
+                      <td style="padding:7px 10px;font-weight:500;">耐磨層厚度</td>
+                      <td style="padding:7px 10px;">≥ 0.7 mm</td>
+                      <td style="padding:7px 10px;color:var(--text-muted);">未明確標註具體厚度（強調深鑲嵌止滑礦物晶體）</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);">
+                      <td style="padding:7px 10px;font-weight:500;">尺寸規格</td>
+                      <td style="padding:7px 10px;">2M（寬）x 20-27M（長）</td>
+                      <td style="padding:7px 10px;">2M（寬）x 20M（長）</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);background:var(--bg-base);">
+                      <td style="padding:7px 10px;font-weight:500;">防滑性能</td>
+                      <td style="padding:7px 10px;">DIN 51130 防滑等級 ≥ R10</td>
+                      <td style="padding:7px 10px;">CNS 8907 C.S.R ≥ 0.7（乾燥）/ ≥ 0.4（水+滑石粉）</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);">
+                      <td style="padding:7px 10px;font-weight:500;">防焰/耐火性</td>
+                      <td style="padding:7px 10px;"><span style="background:var(--sage-l);color:var(--sage);padding:1px 6px;border-radius:3px;font-size:0.68rem;">符合</span> CNS 8907 標準（加熱30秒）</td>
+                      <td style="padding:7px 10px;"><span style="background:var(--sage-l);color:var(--sage);padding:1px 6px;border-radius:3px;font-size:0.68rem;">符合</span> CNS 7614 防焰一級</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);background:var(--bg-base);">
+                      <td style="padding:7px 10px;font-weight:500;">材質結構</td>
+                      <td style="padding:7px 10px;">多層結構、含玻璃纖維、70%再生底層</td>
+                      <td style="padding:7px 10px;">止滑圓顆粒、纖維穩定層、乙烯基密實底層</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);">
+                      <td style="padding:7px 10px;font-weight:500;">環保/安全性</td>
+                      <td style="padding:7px 10px;">100%不含鄰苯二甲酸酯類塑化劑</td>
+                      <td style="padding:7px 10px;">不含石棉、不含碳化矽</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);background:var(--bg-base);">
+                      <td style="padding:7px 10px;font-weight:500;">表面處理</td>
+                      <td style="padding:7px 10px;">PUR 塗層處理</td>
+                      <td style="padding:7px 10px;">止滑圓顆粒與深鑲嵌礦碳物晶體</td>
+                    </tr>
+                    <tr style="border-bottom:1.5px solid var(--text-main);">
+                      <td style="padding:7px 10px;font-weight:500;">特殊性能</td>
+                      <td style="padding:7px 10px;">殘留凹陷性 ≤ 0.05mm、耐光性 ≥ 6</td>
+                      <td style="padding:7px 10px;">360度彎曲不斷裂、耐 95% 乙醇無變化</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style="border-top:1px solid var(--border-light);margin:1rem 0;"></div>
+
+              <!-- Section 2 -->
+              <div style="font-family:var(--serif);font-size:0.95rem;font-weight:500;margin-bottom:0.9rem;">2. 優劣分析與結論</div>
+              <div style="overflow-x:auto;margin-bottom:1.25rem;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.72rem;">
+                  <thead>
+                    <tr style="border-top:1.5px solid var(--text-main);border-bottom:1px solid var(--border-med);">
+                      <th style="padding:7px 10px;font-weight:500;text-align:left;width:14%;color:var(--text-muted);">分析項目</th>
+                      <th style="padding:7px 10px;font-weight:500;text-align:left;">第一份文件（基準）優劣勢</th>
+                      <th style="padding:7px 10px;font-weight:500;text-align:left;">第二份文件（產品）優劣勢</th>
+                      <th style="padding:7px 10px;font-weight:500;text-align:left;">結論與建議</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom:1px solid var(--border-light);">
+                      <td style="padding:7px 10px;font-weight:500;vertical-align:top;">防滑專業度</td>
+                      <td style="padding:7px 10px;vertical-align:top;"><span style="color:var(--sage);font-weight:500;">優勢：</span>提供標準 R10 等級，適用於一般公共走道。<br><span style="color:var(--rust);font-weight:500;">劣勢：</span>未針對極端潮濕環境提供數據。</td>
+                      <td style="padding:7px 10px;vertical-align:top;"><span style="color:var(--sage);font-weight:500;">優勢：</span>針對「水+滑石粉」環境測試，具備佳的濕地防滑能力（C.S.R ≥ 0.4）。<br><span style="color:var(--rust);font-weight:500;">劣勢：</span>未標註 DIN R 等級。</td>
+                      <td style="padding:7px 10px;vertical-align:top;color:var(--primary);font-weight:500;">若施工區域為浴室、更衣室等高度潮濕區域，建議選用第二份文件產品。</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);background:var(--bg-base);">
+                      <td style="padding:7px 10px;font-weight:500;vertical-align:top;">耐用與維護</td>
+                      <td style="padding:7px 10px;vertical-align:top;"><span style="color:var(--sage);font-weight:500;">優勢：</span>具備 PUR 塗層，易於清潔維護，耐磨層明確（0.7mm）。<br><span style="color:var(--rust);font-weight:500;">劣勢：</span>未強調抗化學藥品性能。</td>
+                      <td style="padding:7px 10px;vertical-align:top;"><span style="color:var(--sage);font-weight:500;">優勢：</span>強調 360 度彎曲不斷裂，韌性佳；耐酒精測試表現優異。<br><span style="color:var(--rust);font-weight:500;">劣勢：</span>顆粒表面可能較 PUR 平滑面稍難清理。</td>
+                      <td style="padding:7px 10px;vertical-align:top;">第一份文件基準在日常清潔維護上較具優勢；第二份文件產品在材料韌性與抗藥性上勝出。</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid var(--border-light);">
+                      <td style="padding:7px 10px;font-weight:500;vertical-align:top;">環保與健康</td>
+                      <td style="padding:7px 10px;vertical-align:top;"><span style="color:var(--sage);font-weight:500;">優勢：</span>明確標註 70% 再生料與無塑化劑，符合綠建材趨勢。<br><span style="color:var(--rust);font-weight:500;">劣勢：</span>無特定化學成分排除說明。</td>
+                      <td style="padding:7px 10px;vertical-align:top;"><span style="color:var(--sage);font-weight:500;">優勢：</span>明確排除石棉與碳化矽，對特定工業或醫療規範友善。<br><span style="color:var(--rust);font-weight:500;">劣勢：</span>未提及再生料比例。</td>
+                      <td style="padding:7px 10px;vertical-align:top;">兩者均符合現代環保標準，但第一份文件基準在永續循環數據上較為完整。</td>
+                    </tr>
+                    <tr style="border-bottom:1.5px solid var(--text-main);">
+                      <td style="padding:7px 10px;font-weight:500;vertical-align:top;">施工適用性</td>
+                      <td style="padding:7px 10px;vertical-align:top;"><span style="color:var(--sage);font-weight:500;">優勢：</span>提供詳細的樓梯收邊與鋁止滑條施工大樣圖。<br><span style="color:var(--rust);font-weight:500;">劣勢：</span>未提及焊條無縫處理細節。</td>
+                      <td style="padding:7px 10px;vertical-align:top;"><span style="color:var(--sage);font-weight:500;">優勢：</span>強調無縫焊接技術（4mm PVC 焊條），適合對衛生要求嚴苛的環境。<br><span style="color:var(--rust);font-weight:500;">劣勢：</span>圖面側重於平面與舞檯，未見樓梯處理。</td>
+                      <td style="padding:7px 10px;vertical-align:top;">第一份文件基準適合樓梯與一般地面；第二份文件產品更適合需要高度防水、無縫衛生的平面空間。</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Summary -->
+              <div style="padding:1rem 1.25rem;background:var(--sand-l);border:1px solid #E8D4B4;border-radius:8px;font-size:0.78rem;line-height:1.8;">
+                <strong style="color:var(--text-main);">總結建議：</strong>兩份文件之產品規格相近，厚度均為 2.0mm。<strong>第一份文件（基準）</strong>具備更完整的物理性數據（如凹陷性、耐光性）與樓梯施工細節，適合一般商業空間與公共樓梯使用。<strong>第二份文件（產品 Tarasafe Ultra H2O）</strong>則展現了卓越的濕地防滑性能與抗化學性，且強調無縫焊接，強烈建議應用於醫院、實驗室或經常潮濕的區域。
+              </div>
+
+              <!-- Actions -->
+              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;">
+                <button onclick="demoReset()" style="padding:7px 14px;border:1px solid var(--border-light);border-radius:6px;background:transparent;font-size:0.75rem;cursor:pointer;color:var(--text-muted);">重新展示</button>
+                <button style="padding:7px 14px;border:none;border-radius:6px;background:var(--primary);color:#fff;font-size:0.75rem;cursor:pointer;font-weight:500;"><i class="ti ti-download"></i> PDF 報告</button>
+              </div>
+
+            </div><!-- /report body -->
+          </div>`;
+      }, 300);
+    }, 2000);
+  }
+  window.demoRunAnalysis = demoRunAnalysis;
+
+  function demoReset() {
+    const btn = document.getElementById('demo-run-btn');
+    const label = document.getElementById('demo-run-label');
+    const area = document.getElementById('demo-result-area');
+    const dz = document.getElementById('demo-dropzone-wrap');
+    if (btn) { btn.disabled = false; btn.style.background = 'var(--text-main)'; }
+    if (label) label.textContent = '▶ 點此模擬 AI 分析';
+    if (area) area.innerHTML = '';
+    if (dz) {
+      dz.style.borderColor = 'var(--border-med)';
+      dz.style.background = 'var(--bg-card)';
+      dz.innerHTML = `<i class="ti ti-cloud-upload" style="font-size:1.8rem;color:var(--text-muted);display:block;margin-bottom:8px;"></i>
+        <div style="font-size:0.9rem;font-weight:500;margin-bottom:4px;">上傳規範圖面或測試報告（基準）</div>
+        <div style="font-size:0.72rem;color:var(--text-muted);font-weight:300;">建議單頁截圖 (PNG/JPG) 速度最快，亦支援輕量 PDF</div>`;
+      dz.onclick = demoStartUpload;
+    }
+  }
+  window.demoReset = demoReset;
+
+  let _demoSelA = null, _demoSelB = null;
+  function demoSelProd(el, slot) {
+    if (slot === 'A') {
+      if (_demoSelA) { _demoSelA.style.borderColor='var(--border-light)'; _demoSelA.style.background='var(--bg-card)'; _demoSelA.querySelector('.demo-sel-badge')?.remove(); }
+      _demoSelA = el;
+    } else {
+      if (_demoSelB) { _demoSelB.style.borderColor='var(--border-light)'; _demoSelB.style.background='var(--bg-card)'; _demoSelB.querySelector('.demo-sel-badge')?.remove(); }
+      _demoSelB = el;
+    }
+    el.style.borderColor = slot === 'A' ? 'var(--text-main)' : 'var(--primary)';
+    el.style.background = slot === 'A' ? 'var(--bg-base)' : 'var(--primary-l)';
+    const badge = document.createElement('span');
+    badge.className = 'demo-sel-badge';
+    badge.textContent = slot;
+    badge.style.cssText = `position:absolute;top:8px;right:8px;font-size:0.6rem;font-weight:600;
+      padding:1px 7px;border-radius:99px;background:${slot==='A'?'var(--text-main)':'var(--primary)'};color:#fff;`;
+    el.style.position = 'relative';
+    el.appendChild(badge);
+  }
+  window.demoSelProd = demoSelProd;
+
+  /* ── ROI CALC ── */
+  function calcROI() {
+    const v = parseInt(document.getElementById('roiSlider').value);
+    document.getElementById('valCount').innerText = v + ' 件';
+    const mH = (v * 45) / 60, aH = (v * 2) / 60, sH = mH - aH;
+    document.getElementById('valManual').innerText = mH.toFixed(1) + ' h';
+    document.getElementById('valAI').innerText = aH.toFixed(1) + ' h';
+    document.getElementById('valSaved').innerText = sH.toFixed(1);
+    document.getElementById('valCost').innerText = 'NT$' + Math.round(sH * 400).toLocaleString();
+    document.getElementById('valYear').innerText = 'NT$' + Math.round(sH * 400 * 12).toLocaleString();
+  }
+  calcROI();
+  window.calcROI = calcROI;
+  window.goSlide = goSlide;
+</script>
+<style>@keyframes spin{100%{transform:rotate(360deg)}}</style>
+</body>
+</html>
